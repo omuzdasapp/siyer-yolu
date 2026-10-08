@@ -2,12 +2,12 @@
 const CACHE = 'siyer-yolu-v1';
 const FILES = [
   './', 'index.html', 'style.css', 'gizlilik.html', 'manifest.webmanifest',
-  'js/app.js', 'js/data.js', 'js/store.js', 'js/audio.js', 'js/ui.js', 'js/net.js', 'js/config.js', 'js/duel.js', 'js/share.js',
-  'fonts/manrope-latin-400-normal.woff2', 'fonts/manrope-latin-ext-400-normal.woff2',
-  'fonts/manrope-latin-600-normal.woff2', 'fonts/manrope-latin-ext-600-normal.woff2',
-  'fonts/manrope-latin-700-normal.woff2', 'fonts/manrope-latin-ext-700-normal.woff2',
-  'fonts/unbounded-latin-700-normal.woff2', 'fonts/unbounded-latin-ext-700-normal.woff2',
-  'icons/icon-192.png', 'icons/icon-512.png',
+  'app.js', 'data.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',
+  'manrope-latin-400-normal.woff2', 'manrope-latin-ext-400-normal.woff2',
+  'manrope-latin-600-normal.woff2', 'manrope-latin-ext-600-normal.woff2',
+  'manrope-latin-700-normal.woff2', 'manrope-latin-ext-700-normal.woff2',
+  'unbounded-latin-700-normal.woff2', 'unbounded-latin-ext-700-normal.woff2',
+  'icon-192.png', 'icon-512.png',
 ];
 
 const clean = (res) => (res && res.redirected

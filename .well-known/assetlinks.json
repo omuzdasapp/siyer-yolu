@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.saadetevreni.siyeryolu",
+      "sha256_cert_fingerprints": [
+        "3D:A3:1B:E6:E1:D7:FD:A4:CB:63:CF:9B:34:E0:24:D5:B0:25:61:2F:79:FD:7E:18:37:18:E3:27:19:85:54:88"
+      ]
+    }
+  }
+]

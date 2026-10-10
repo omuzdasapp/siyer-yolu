@@ -1,17 +1,20 @@
-// Sesli okuma (cihazın Türkçe konuşma motoru) ve küçük ses efektleri.
+// Sesli okuma (cihazın Türkçe/İspanyolca konuşma motoru) ve küçük ses efektleri.
 import { state } from './store.js';
+import { LANG } from './i18n.js';
 
 let voice = null;
-const pick = () => { voice = (window.speechSynthesis?.getVoices() || []).find((v) => v.lang?.toLowerCase().startsWith('tr')) || null; };
+const pick = () => { voice = (window.speechSynthesis?.getVoices() || []).find((v) => v.lang?.toLowerCase().startsWith(LANG)) || null; };
 pick();
 window.speechSynthesis?.addEventListener?.('voiceschanged', pick);
 
 // Kısaltmalar sesli okunurken açılır.
-const expand = (t) => t
+const expand = (t) => (LANG === 'es' ? t
+  .replace(/\(s\.a\.w\.\)/g, ', la paz y las bendiciones de Allah sean con él, ')
+  .replace(/["“”]/g, '') : t
   .replace(/\(s\.a\.v\.\)/g, ' sallallahu aleyhi ve sellem ')
   .replace(/\bHz\./g, 'Hazreti')
   .replace(/\bb\. /g, 'bin ')
-  .replace(/["“”]/g, '');
+  .replace(/["“”]/g, ''));
 
 export const speaking = () => Boolean(window.speechSynthesis?.speaking);
 export const stop = () => window.speechSynthesis?.cancel();
@@ -22,7 +25,7 @@ export function say(text, rate = 0.95) {
   s.cancel();
   return new Promise((res) => {
     const u = new SpeechSynthesisUtterance(expand(text));
-    u.lang = 'tr-TR';
+    u.lang = LANG === 'es' ? 'es-419' : 'tr-TR';
     if (voice) u.voice = voice;
     u.rate = rate;
     u.onend = u.onerror = () => res();

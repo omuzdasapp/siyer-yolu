@@ -5,8 +5,9 @@ import { h, toast, confetti, wait } from './ui.js';
 import { online, rpc, forgetSession } from './net.js';
 import { onlineMatch, botMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
+import { t, LANG, setLang, serverMsg } from './i18n.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -20,26 +21,27 @@ function show(...nodes) {
 }
 
 const topbar = (title, back) => h('header', { class: 'top' },
-  back ? h('button', { class: 'icon', 'aria-label': 'Geri', onclick: back }, '←') : h('span', { class: 'brand' }, 'Siyer Yolu'),
+  back ? h('button', { class: 'icon', 'aria-label': t('back'), onclick: back }, '←') : h('span', { class: 'brand' }, 'Siyer Yolu'),
   title ? h('span', { class: 'top-title' }, title) : null,
   h('span', { class: 'top-right' },
-    h('span', { class: `streak${store.doneToday() ? ' lit' : ''}`, title: 'Günlük seri' }, '🔥 ', String(store.streak())),
-    back ? null : h('button', { class: 'icon', 'aria-label': 'Ayarlar', onclick: settings }, '⚙︎')));
+    h('span', { class: `streak${store.doneToday() ? ' lit' : ''}`, title: t('dailyStreak') }, '🔥 ', String(store.streak())),
+    back ? null : h('button', { class: 'icon', 'aria-label': t('settings'), onclick: settings }, '⚙︎')));
 
 const tabs = (cur) => h('nav', { class: 'tabs' },
-  [['dersler', '📖', 'Dersler'], ['yaris', '⚡', 'Yarış'], ['rozet', '🏅', 'Rozetler']].map(([k, i, t]) =>
-    h('button', { class: cur === k ? 'on' : '', 'aria-current': cur === k ? 'page' : null, onclick: () => home(k) }, h('span', {}, i), t)));
+  [['dersler', '📖', t('tabLessons')], ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
+    h('button', { class: cur === k ? 'on' : '', 'aria-current': cur === k ? 'page' : null, onclick: () => home(k) }, h('span', {}, i), label)));
 
 /* ───────── İlk açılış ───────── */
 function onboarding() {
   show(h('main', { class: 'screen center onboard' },
     h('div', { class: 'seal', 'aria-hidden': 'true' }, '۞'),
     h('h1', { class: 'display' }, 'Siyer Yolu'),
-    h('p', { class: 'lead' }, 'Günde 5 dakikada Peygamberimizin (s.a.v.) hayatı. Her gün bir ders, üç soru ve dilersen canlı bir yarış.'),
-    h('p', { class: 'muted' }, 'Kimin için kullanacaksın?'),
-    h('button', { class: 'btn', onclick: () => { store.set({ mode: 'adult' }); home(); } }, 'Kendim için'),
-    h('button', { class: 'btn ghost', onclick: () => { store.set({ mode: 'kid' }); home(); } }, 'Çocuğumla birlikte'),
-    h('p', { class: 'tiny muted' }, 'Çocuk modunda metinler sadeleşir, sesli okunur ve yalnızca bot ile yarışılır.')));
+    h('p', { class: 'lead' }, t('onbLead')),
+    h('p', { class: 'muted' }, t('onbWho')),
+    h('button', { class: 'btn', onclick: () => { store.set({ mode: 'adult' }); home(); } }, t('onbSelf')),
+    h('button', { class: 'btn ghost', onclick: () => { store.set({ mode: 'kid' }); home(); } }, t('onbKid')),
+    h('p', { class: 'tiny muted' }, t('onbKidNote')),
+    h('button', { class: 'link', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? '🇹🇷 Türkçe' : '🌎 Español')));
 }
 
 /* ───────── Ana ekran ───────── */
@@ -55,11 +57,11 @@ function lessonsTab() {
     h('div', { class: 'today-head' },
       h('span', { class: `ring${store.doneToday() ? ' full' : ''}`, 'aria-hidden': 'true' }, store.doneToday() ? '✓' : '1'),
       h('div', {},
-        h('p', { class: 'eyebrow' }, store.doneToday() ? 'Bugünün hedefi tamam' : 'Bugünün dersi'),
-        h('h2', {}, next ? `${next.icon} ${next.title}` : 'Bütün yolu tamamladın 🤍'),
-        h('p', { class: 'muted small' }, next ? `${ERAS[next.era]} · ${next.year}` : 'Dersleri tekrar edebilir ya da yarışabilirsin.'))),
-    next ? h('button', { class: 'btn', onclick: () => lesson(next) }, store.doneToday() ? 'Bir ders daha' : 'Başla · 5 dk') : null,
-    st > 0 ? h('p', { class: 'small streak-note' }, `🔥 ${st} günlük seri. ${store.doneToday() ? 'Yarın görüşmek üzere!' : 'Bugün de ders yap, seri bozulmasın.'}`) : null);
+        h('p', { class: 'eyebrow' }, store.doneToday() ? t('todayDone') : t('todayLesson')),
+        h('h2', {}, next ? `${next.icon} ${next.title}` : t('allDone')),
+        h('p', { class: 'muted small' }, next ? `${ERAS[next.era]} · ${next.year}` : t('allDoneNote')))),
+    next ? h('button', { class: 'btn', onclick: () => lesson(next) }, store.doneToday() ? t('oneMore') : t('start5')) : null,
+    st > 0 ? h('p', { class: 'small streak-note' }, t('streakNote', st, store.doneToday())) : null);
 
   const path = h('ol', { class: 'path' }, LESSONS.flatMap((l, i) => {
     const done = store.isDone(l.n);
@@ -71,19 +73,19 @@ function lessonsTab() {
         h('button', { class: `step${done ? ' done' : ''}${open ? '' : ' locked'}`, disabled: !open, onclick: () => lesson(l) },
           h('span', { class: 'step-icon', 'aria-hidden': 'true' }, open ? l.icon : '🔒'),
           h('span', { class: 'step-text' }, h('b', {}, `${l.n}. ${l.title}`), h('small', {}, l.year)),
-          h('span', { class: 'stars', 'aria-label': done ? `${store.state().done[l.n].best} doğru` : null }, done ? '★'.repeat(store.state().done[l.n].best) + '☆'.repeat(3 - store.state().done[l.n].best) : ''))),
+          h('span', { class: 'stars', 'aria-label': done ? t('nCorrect', store.state().done[l.n].best) : null }, done ? '★'.repeat(store.state().done[l.n].best) + '☆'.repeat(3 - store.state().done[l.n].best) : ''))),
     ];
   }));
-  return [goal, h('h3', { class: 'sec' }, 'Yol'), path];
+  return [goal, h('h3', { class: 'sec' }, t('path')), path];
 }
 
 /* ───────── Ders ───────── */
 function lesson(l) {
   const text = kid() ? l.kid : l.text;
   const listen = h('button', { class: 'btn ghost small', onclick: async () => {
-    if (window.speechSynthesis?.speaking) { stop(); listen.textContent = '🔊 Dinle'; return; }
-    listen.textContent = '■ Durdur'; await say(`${l.title}. ${text}`); listen.textContent = '🔊 Dinle';
-  } }, '🔊 Dinle');
+    if (window.speechSynthesis?.speaking) { stop(); listen.textContent = t('listen'); return; }
+    listen.textContent = t('stopListen'); await say(`${l.title}. ${text}`); listen.textContent = t('listen');
+  } }, t('listen'));
   show(topbar(`${l.n}/${LESSONS.length}`, () => home()),
     h('main', { class: 'screen' },
       h('article', { class: 'card lesson' },
@@ -92,7 +94,7 @@ function lesson(l) {
         h('h1', {}, l.title),
         h('p', { class: 'lesson-text' }, text),
         listen),
-      h('button', { class: 'btn', onclick: () => quiz(l) }, 'Teste geç · 3 soru')));
+      h('button', { class: 'btn', onclick: () => quiz(l) }, t('toQuiz'))));
   if (kid()) setTimeout(() => listen.click(), 400);
 }
 
@@ -104,21 +106,21 @@ function quiz(l) {
     const q = qs[i];
     const opts = shuffle(q.o.map((t, k) => ({ t, k })));
     const fb = h('p', { class: 'feedback', role: 'status' });
-    const next = h('button', { class: 'btn', hidden: true, onclick: () => { i++; step(); } }, i === qs.length - 1 ? 'Sonucu gör' : 'Sonraki soru');
+    const next = h('button', { class: 'btn', hidden: true, onclick: () => { i++; step(); } }, i === qs.length - 1 ? t('seeResult') : t('nextQ'));
     const buttons = opts.map((o) => h('button', { class: 'opt', onclick: () => {
       buttons.forEach((b) => { b.disabled = true; });
       const btn = buttons[opts.indexOf(o)];
       const right = buttons[opts.findIndex((x) => x.k === 0)];
       right.classList.add('right');
-      if (o.k === 0) { correct++; chime('ok'); fb.textContent = 'Doğru! 🌿'; }
-      else { btn.classList.add('wrong'); chime('no'); fb.textContent = `Doğrusu: ${q.o[0]}`; }
+      if (o.k === 0) { correct++; chime('ok'); fb.textContent = t('right'); }
+      else { btn.classList.add('wrong'); chime('no'); fb.textContent = t('rightIs', q.o[0]); }
       next.hidden = false; next.focus();
     } }, o.t));
-    show(topbar(`Soru ${i + 1}/3`, () => lesson(l)),
+    show(topbar(t('qOf', i + 1, 3), () => lesson(l)),
       h('main', { class: 'screen' },
         h('div', { class: 'progress', 'aria-hidden': 'true' }, h('span', { style: { width: `${(i / 3) * 100}%` } })),
         h('h2', { class: 'question' }, q.q),
-        kid() ? h('button', { class: 'btn ghost small', onclick: () => say(`${q.q} ${q.o.join(', ')}`) }, '🔊 Soruyu dinle') : null,
+        kid() ? h('button', { class: 'btn ghost small', onclick: () => say(`${q.q} ${q.o.join(', ')}`) }, t('listenQ')) : null,
         h('div', { class: 'opts' }, buttons), fb, next));
   };
   step();
@@ -130,9 +132,9 @@ function lessonDone(l, correct) {
     show(topbar(null, () => home()), h('main', { class: 'screen center' },
       h('div', { class: 'big-emoji', 'aria-hidden': 'true' }, '📖'),
       h('h1', {}, `${correct}/3`),
-      h('p', { class: 'lead' }, 'Dersi bir kez daha okuyup tekrar deneyelim. Acele yok.'),
-      h('button', { class: 'btn', onclick: () => lesson(l) }, 'Dersi tekrar oku'),
-      h('button', { class: 'btn ghost', onclick: () => quiz(l) }, 'Testi tekrar çöz')));
+      h('p', { class: 'lead' }, t('retryLead')),
+      h('button', { class: 'btn', onclick: () => lesson(l) }, t('reread')),
+      h('button', { class: 'btn ghost', onclick: () => quiz(l) }, t('retryQuiz'))));
     return;
   }
   const { fresh, firstToday } = store.finishLesson(l.n, correct);
@@ -141,14 +143,14 @@ function lessonDone(l, correct) {
   const next = store.nextLesson();
   show(topbar(null, () => home()), h('main', { class: 'screen center' },
     h('div', { class: 'big-emoji', 'aria-hidden': 'true' }, correct === 3 ? '🎯' : '🌿'),
-    h('h1', {}, correct === 3 ? 'Tam isabet!' : 'Güzel!'),
-    h('p', { class: 'lead' }, `${correct}/3 doğru · ${l.title}`),
-    firstToday ? h('p', { class: 'pill gold' }, `🔥 ${st} günlük seri`) : null,
-    fresh.length ? h('div', { class: 'new-badges' }, h('p', { class: 'eyebrow' }, 'Yeni rozet'),
+    h('h1', {}, correct === 3 ? t('perfect') : t('good')),
+    h('p', { class: 'lead' }, t('scoreLine', correct, l.title)),
+    firstToday ? h('p', { class: 'pill gold' }, t('streakPill', st)) : null,
+    fresh.length ? h('div', { class: 'new-badges' }, h('p', { class: 'eyebrow' }, t('newBadge')),
       fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return h('span', { class: 'badge on' }, h('b', {}, b.icon), b.name); })) : null,
-    next ? h('button', { class: 'btn', onclick: () => lesson(next) }, `Sıradaki: ${next.title}`) : null,
-    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'seri', streak: st, lessons: store.doneCount() }) }, '📤 Serini paylaş'),
-    h('button', { class: 'link', onclick: () => home() }, 'Ana sayfa')));
+    next ? h('button', { class: 'btn', onclick: () => lesson(next) }, t('nextLesson', next.title)) : null,
+    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'seri', streak: st, lessons: store.doneCount() }) }, t('shareStreak')),
+    h('button', { class: 'link', onclick: () => home() }, t('homeLink'))));
 }
 
 /* ───────── Yarış ───────── */
@@ -156,68 +158,68 @@ function raceTab() {
   const s = store.state();
   const intro = h('section', { class: 'card race-hero' },
     h('div', { class: 'vs-art', 'aria-hidden': 'true' }, h('span', {}, '⚡')),
-    h('h2', {}, 'Siyer Yarışı'),
-    h('p', { class: 'muted' }, '5 soru, her biri 12 saniye. Doğru ve hızlı cevap daha çok puan getirir.'));
+    h('h2', {}, t('raceTitle')),
+    h('p', { class: 'muted' }, t('raceIntro')));
   if (kid()) {
     return [intro,
-      h('button', { class: 'btn', onclick: () => duel(botMatch({ nickname: 'Sen', kid: true })) }, '🤖 Bot ile yarış'),
-      h('p', { class: 'small muted center' }, 'Çocuk modunda canlı yarış kapalıdır; yalnızca bot ile oynanır. Ayarlardan değiştirebilirsin.')];
+      h('button', { class: 'btn', onclick: () => duel(botMatch({ nickname: t('you'), kid: true })) }, t('botRace')),
+      h('p', { class: 'small muted center' }, t('kidRaceNote'))];
   }
   const meBox = h('div', { class: 'me-box' });
-  const board = h('ol', { class: 'board' }, h('li', { class: 'muted small' }, online ? 'Sıralama yükleniyor…' : 'Canlı yarış açılınca sıralama burada görünecek.'));
+  const board = h('ol', { class: 'board' }, h('li', { class: 'muted small' }, online ? t('boardLoading') : t('boardSoon')));
   if (online && s.nickname) {
     rpc('me').then((m) => {
       if (!m) return;
-      meBox.replaceChildren(h('b', {}, m.nickname), h('span', {}, `Puan ${m.rating}`), h('span', {}, `${m.wins} galibiyet`), m.games ? h('span', {}, `#${m.rank}`) : null);
+      meBox.replaceChildren(h('b', {}, m.nickname), h('span', {}, t('points', m.rating)), h('span', {}, t('wins', m.wins)), m.games ? h('span', {}, `#${m.rank}`) : null);
     }).catch(() => {});
     rpc('leaderboard').then((rows) => {
-      board.replaceChildren(...(rows.length ? rows.map((r, i) => h('li', { class: r.me ? 'me' : '' }, h('span', { class: 'rank' }, i + 1), h('span', { class: 'nick' }, r.nickname), h('span', { class: 'pts' }, r.rating))) : [h('li', { class: 'muted small' }, 'Henüz kimse yarışmadı. İlk sen ol!')]));
-    }).catch(() => board.replaceChildren(h('li', { class: 'muted small' }, 'Sıralama şu an yüklenemedi.')));
+      board.replaceChildren(...(rows.length ? rows.map((r, i) => h('li', { class: r.me ? 'me' : '' }, h('span', { class: 'rank' }, i + 1), h('span', { class: 'nick' }, r.nickname), h('span', { class: 'pts' }, r.rating))) : [h('li', { class: 'muted small' }, t('boardEmpty'))]));
+    }).catch(() => board.replaceChildren(h('li', { class: 'muted small' }, t('boardErr'))));
   }
   return [intro,
     online && s.nickname ? meBox : null,
-    online ? h('button', { class: 'btn', onclick: () => (s.nickname ? search() : nickname(search)) }, '⚡ Canlı rakip bul')
-      : h('p', { class: 'note' }, 'Canlı eşleşme çok yakında açılıyor. Şimdilik bot ile antrenman yapabilirsin.'),
-    h('button', { class: 'btn ghost', onclick: () => duel(botMatch({ nickname: s.nickname || 'Sen', kid: false })) }, '🤖 Bot ile antrenman'),
-    h('h3', { class: 'sec' }, 'Sıralama · ilk 20'), board];
+    online ? h('button', { class: 'btn', onclick: () => (s.nickname ? search() : nickname(search)) }, t('findLive'))
+      : h('p', { class: 'note' }, t('liveSoon')),
+    h('button', { class: 'btn ghost', onclick: () => duel(botMatch({ nickname: s.nickname || t('you'), kid: false })) }, t('botTrain')),
+    h('h3', { class: 'sec' }, t('boardTitle')), board];
 }
 
 function nickname(then) {
-  const input = h('input', { class: 'input', maxlength: 16, autocomplete: 'off', placeholder: 'örn. Medine_Yolcusu', value: store.state().nickname || '' });
+  const input = h('input', { class: 'input', maxlength: 16, autocomplete: 'off', placeholder: t('nickPh'), value: store.state().nickname || '' });
   const err = h('p', { class: 'err', role: 'alert' });
-  const btn = h('button', { class: 'btn', type: 'submit' }, 'Kaydet');
-  show(topbar('Takma ad', () => home('yaris')), h('main', { class: 'screen' },
+  const btn = h('button', { class: 'btn', type: 'submit' }, t('save'));
+  show(topbar(t('nickTitle'), () => home('yaris')), h('main', { class: 'screen' },
     h('form', { class: 'card stack', onsubmit: async (e) => {
       e.preventDefault(); err.textContent = ''; btn.disabled = true;
       try { const p = await rpc('set_nickname', { p_nick: input.value }); store.set({ nickname: p.nickname }); then ? then() : home('yaris'); }
-      catch (x) { err.textContent = x.message; btn.disabled = false; }
+      catch (x) { err.textContent = serverMsg(x.message); btn.disabled = false; }
     } },
-      h('h2', {}, 'Rakiplerin seni nasıl görsün?'),
-      h('p', { class: 'muted small' }, '3-16 harf ya da rakam. Gerçek adını yazmana gerek yok; e-posta veya telefon istemiyoruz.'),
+      h('h2', {}, t('nickQ')),
+      h('p', { class: 'muted small' }, t('nickNote')),
       input, err, btn)));
   input.focus();
 }
 
 function search() {
   let alive = true; let t0 = Date.now();
-  const timer = h('p', { class: 'muted' }, '0 sn');
-  const bot = h('button', { class: 'btn ghost', hidden: true, onclick: () => { alive = false; rpc('cancel_search').catch(() => {}); duel(botMatch({ nickname: store.state().nickname, kid: false })); } }, '🤖 Beklemeden bot ile oyna');
-  show(topbar('Rakip aranıyor', () => { alive = false; rpc('cancel_search').catch(() => {}); home('yaris'); }),
+  const timer = h('p', { class: 'muted' }, t('sec', 0));
+  const bot = h('button', { class: 'btn ghost', hidden: true, onclick: () => { alive = false; rpc('cancel_search').catch(() => {}); duel(botMatch({ nickname: store.state().nickname, kid: false })); } }, t('playBot'));
+  show(topbar(t('searching'), () => { alive = false; rpc('cancel_search').catch(() => {}); home('yaris'); }),
     h('main', { class: 'screen center' },
       h('div', { class: 'radar', 'aria-hidden': 'true' }, h('span', {}), h('span', {}), h('b', {}, '⚡')),
-      h('h2', {}, 'Rakip aranıyor…'), timer,
-      h('p', { class: 'small muted' }, 'Arkadaşına da uygulamayı açıp "Canlı rakip bul"a basmasını söylersen birbirinizle eşleşirsiniz.'),
+      h('h2', {}, t('searchingDots')), timer,
+      h('p', { class: 'small muted' }, t('searchNote')),
       bot));
   cleanup = () => { alive = false; };
   const loop = async () => {
     while (alive) {
-      timer.textContent = `${Math.floor((Date.now() - t0) / 1000)} sn`;
+      timer.textContent = t('sec', Math.floor((Date.now() - t0) / 1000));
       if (Date.now() - t0 > 12000) bot.hidden = false;
       try {
         const r = await rpc('find_match');
         if (!alive) return;
         if (r.status === 'matched') { alive = false; chime('ok'); duel(onlineMatch(r.match_id)); return; }
-      } catch (e) { if (alive) { toast(e.message); alive = false; home('yaris'); } return; }
+      } catch (e) { if (alive) { toast(serverMsg(e.message)); alive = false; home('yaris'); } return; }
       await wait(1500);
     }
   };
@@ -230,12 +232,12 @@ function duel(match) {
   let opts = [];
   const meName = h('b', {}); const oppName = h('b', {});
   const meScore = h('span', { class: 'score' }, '0'); const oppScore = h('span', { class: 'score' }, '0');
-  const oppDot = h('span', { class: 'dot', title: 'Rakip cevapladı' });
-  const phase = h('p', { class: 'eyebrow center' }, 'Bağlanıyor…');
+  const oppDot = h('span', { class: 'dot', title: t('oppAnswered') });
+  const phase = h('p', { class: 'eyebrow center' }, t('connecting'));
   const bar = h('span'); const barBox = h('div', { class: 'timer', 'aria-hidden': 'true' }, bar);
   const qBox = h('div', { class: 'duel-q' });
   const note = h('p', { class: 'feedback center', role: 'status' });
-  show(h('header', { class: 'top' }, h('button', { class: 'icon', 'aria-label': 'Çık', onclick: () => { if (confirm('Yarıştan çıkılsın mı? Kalan soruların puanı 0 sayılır.')) home('yaris'); } }, '✕'), h('span', { class: 'top-title' }, match.kind === 'bot' ? 'Antrenman' : 'Canlı yarış'), h('span')),
+  show(h('header', { class: 'top' }, h('button', { class: 'icon', 'aria-label': t('exit'), onclick: () => { if (confirm(t('exitConfirm'))) home('yaris'); } }, '✕'), h('span', { class: 'top-title' }, match.kind === 'bot' ? t('training') : t('liveRace')), h('span')),
     h('main', { class: 'screen duel' },
       h('div', { class: 'scoreboard' },
         h('div', { class: 'side me' }, meName, meScore),
@@ -255,7 +257,7 @@ function duel(match) {
         offset = new Date(s.now).getTime() - (t + rtt / 2);
         st = s;
         for (const m of s.mine || []) myAns.set(m.qi, m);
-      } catch { phase.textContent = 'Bağlantı yavaş…'; }
+      } catch { phase.textContent = t('slow'); }
       await wait(match.kind === 'bot' ? 250 : 1000);
     }
   }
@@ -271,14 +273,14 @@ function duel(match) {
       myAns.set(qi, { choice: o.k, pending: true });
       try {
         const r = await match.submit(qi, o.k);
-        if (!r.accepted) { note.textContent = 'Süre doldu.'; myAns.set(qi, { choice: o.k, correct: false, points: 0 }); return; }
+        if (!r.accepted) { note.textContent = t('timeUp'); myAns.set(qi, { choice: o.k, correct: false, points: 0 }); return; }
         myAns.set(qi, { choice: o.k, correct: r.correct, points: r.points });
         chime(r.correct ? 'ok' : 'no');
-        note.textContent = r.correct ? `Doğru! +${r.points}` : 'Yanlış';
+        note.textContent = r.correct ? t('rightPts', r.points) : t('wrong');
         buttons[idx].classList.add(r.correct ? 'right' : 'wrong');
-      } catch (e) { note.textContent = e.message; }
+      } catch (e) { note.textContent = serverMsg(e.message); }
     } }, o.t));
-    qBox.replaceChildren(h('p', { class: 'qno' }, `Soru ${qi + 1}/${N_Q}`), h('h2', { class: 'question' }, q.q), h('div', { class: 'opts' }, buttons));
+    qBox.replaceChildren(h('p', { class: 'qno' }, t('qOf', qi + 1, N_Q)), h('h2', { class: 'question' }, q.q), h('div', { class: 'opts' }, buttons));
     qBox.buttons = buttons;
   }
 
@@ -287,9 +289,9 @@ function duel(match) {
     buttons.forEach((b) => { b.disabled = true; });
     const right = opts.findIndex((o) => o.k === 0);
     buttons[right]?.classList.add('right');
-    const t = (st.theirs || []).find((x) => x.qi === qi);
+    const th = (st.theirs || []).find((x) => x.qi === qi);
     const mine = myAns.get(qi);
-    note.textContent = `${mine ? (mine.correct ? `Sen +${mine.points}` : 'Sen ✗') : 'Sen cevap vermedin'} · ${t ? (t.correct ? `Rakip +${t.points}` : 'Rakip ✗') : 'Rakip cevap vermedi'}`;
+    note.textContent = `${mine ? (mine.correct ? t('youPts', mine.points) : t('youX')) : t('youNone')} · ${th ? (th.correct ? t('oppPts', th.points) : t('oppX')) : t('oppNone')}`;
   }
 
   async function end() {
@@ -303,30 +305,30 @@ function duel(match) {
   function tick() {
     if (!alive) return;
     if (st) {
-      meName.textContent = st.me?.nickname || 'Sen';
-      oppName.textContent = st.opp?.nickname || 'Rakip';
+      meName.textContent = st.me?.nickname || t('you');
+      oppName.textContent = st.opp?.nickname || t('opp');
       meScore.textContent = sum([...myAns.values()]);
       oppScore.textContent = sum((st.theirs || []).filter((x) => x.points != null));
       const start = new Date(st.starts_at).getTime();
-      const t = now() - start;
-      if (t < 0) {
-        phase.textContent = `Başlıyor: ${Math.ceil(-t / 1000)}`; bar.style.width = '100%';
-        if (curQ !== -2) { curQ = -2; qBox.replaceChildren(h('div', { class: 'ready' }, h('p', { class: 'big-emoji' }, '⏳'), h('p', {}, `${st.opp?.nickname || 'Rakip'} ile eşleştin`), st.opp?.bot ? h('p', { class: 'small muted' }, 'Bu bir bilgisayar rakiptir.') : null)); }
-      } else if (t >= st.slot_ms * N_Q) {
-        phase.textContent = 'Bitti'; end(); return;
+      const el = now() - start;
+      if (el < 0) {
+        phase.textContent = t('startsIn', Math.ceil(-el / 1000)); bar.style.width = '100%';
+        if (curQ !== -2) { curQ = -2; qBox.replaceChildren(h('div', { class: 'ready' }, h('p', { class: 'big-emoji' }, '⏳'), h('p', {}, t('matchedWith', st.opp?.nickname || t('opp'))), st.opp?.bot ? h('p', { class: 'small muted' }, t('isBot')) : null)); }
+      } else if (el >= st.slot_ms * N_Q) {
+        phase.textContent = t('done'); end(); return;
       } else {
-        const qi = Math.floor(t / st.slot_ms);
-        const inQ = t - qi * st.slot_ms;
+        const qi = Math.floor(el / st.slot_ms);
+        const inQ = el - qi * st.slot_ms;
         if (qi !== curQ) { curQ = qi; renderQuestion(qi); qBox.revealed = false; }
         const open = inQ < st.open_ms;
         oppDot.classList.toggle('on', Boolean((st.theirs || []).find((x) => x.qi === qi)));
         if (open) {
           const left = st.open_ms - inQ;
-          phase.textContent = `${Math.ceil(left / 1000)} sn`;
+          phase.textContent = t('sec', Math.ceil(left / 1000));
           bar.style.width = `${(left / st.open_ms) * 100}%`;
           bar.classList.toggle('low', left < 4000);
         } else {
-          phase.textContent = qi < N_Q - 1 ? 'Sıradaki soru geliyor…' : 'Sonuçlar…';
+          phase.textContent = qi < N_Q - 1 ? t('nextComing') : t('results');
           bar.style.width = '0%';
           if (!qBox.revealed) { qBox.revealed = true; reveal(qi); }
           else reveal(qi); // rakip sonucu geç gelirse güncelle
@@ -345,20 +347,20 @@ function duelResult(match, s) {
   const res = mine > theirs ? 'win' : mine < theirs ? 'lose' : 'draw';
   const { fresh } = store.finishDuel(res === 'win');
   if (res === 'win') { chime('win'); confetti(); }
-  const again = () => (match.kind === 'bot' ? duel(botMatch({ nickname: store.state().nickname || 'Sen', kid: kid() })) : search());
+  const again = () => (match.kind === 'bot' ? duel(botMatch({ nickname: store.state().nickname || t('you'), kid: kid() })) : search());
   show(topbar(null, () => home('yaris')), h('main', { class: 'screen center' },
     h('div', { class: 'big-emoji', 'aria-hidden': 'true' }, res === 'win' ? '🏆' : res === 'lose' ? '🌱' : '🤝'),
-    h('h1', {}, res === 'win' ? 'Kazandın!' : res === 'lose' ? 'Bu sefer rakip kazandı' : 'Berabere'),
+    h('h1', {}, res === 'win' ? t('won') : res === 'lose' ? t('lost') : t('draw')),
     h('div', { class: 'final' },
-      h('div', {}, h('small', {}, s.me?.nickname || 'Sen'), h('b', {}, mine)),
+      h('div', {}, h('small', {}, s.me?.nickname || t('you')), h('b', {}, mine)),
       h('span', {}, '–'),
-      h('div', {}, h('small', {}, s.opp?.nickname || 'Rakip'), h('b', {}, theirs))),
-    s.my_delta != null ? h('p', { class: `pill ${s.my_delta >= 0 ? 'gold' : ''}` }, `Puanın ${s.my_delta >= 0 ? '+' : ''}${s.my_delta}`) : null,
-    res === 'lose' ? h('p', { class: 'muted small' }, 'Kaybetmek de öğrenmektir. Dersleri tekrar edip yeniden dene.') : null,
+      h('div', {}, h('small', {}, s.opp?.nickname || t('opp')), h('b', {}, theirs))),
+    s.my_delta != null ? h('p', { class: `pill ${s.my_delta >= 0 ? 'gold' : ''}` }, t('ratingDelta', s.my_delta)) : null,
+    res === 'lose' ? h('p', { class: 'muted small' }, t('loseNote')) : null,
     fresh.length ? h('div', { class: 'new-badges' }, fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return h('span', { class: 'badge on' }, h('b', {}, b.icon), b.name); })) : null,
-    h('button', { class: 'btn', onclick: again }, match.kind === 'bot' ? 'Tekrar oyna' : 'Yeni rakip bul'),
-    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'yaris', me: s.me?.nickname || 'Ben', opp: s.opp?.nickname || 'Rakip', mine, theirs, res }) }, '📤 Sonucu paylaş'),
-    h('button', { class: 'link', onclick: () => home('yaris') }, 'Yarış sayfası')));
+    h('button', { class: 'btn', onclick: again }, match.kind === 'bot' ? t('playAgain') : t('newOpp')),
+    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'yaris', me: s.me?.nickname || t('me'), opp: s.opp?.nickname || t('opp'), mine, theirs, res }) }, t('shareResult')),
+    h('button', { class: 'link', onclick: () => home('yaris') }, t('racePage'))));
 }
 
 /* ───────── Rozetler ───────── */
@@ -367,12 +369,12 @@ function badgesTab() {
   const s = store.state();
   return [
     h('section', { class: 'card stats' },
-      h('div', {}, h('b', {}, store.streak()), h('small', {}, 'günlük seri')),
-      h('div', {}, h('b', {}, `${store.doneCount()}/${LESSONS.length}`), h('small', {}, 'ders')),
-      h('div', {}, h('b', {}, s.duels.won), h('small', {}, 'galibiyet'))),
+      h('div', {}, h('b', {}, store.streak()), h('small', {}, t('statStreak'))),
+      h('div', {}, h('b', {}, `${store.doneCount()}/${LESSONS.length}`), h('small', {}, t('statLessons'))),
+      h('div', {}, h('b', {}, s.duels.won), h('small', {}, t('statWins')))),
     h('div', { class: 'badges' }, BADGES.map((b) => h('div', { class: `badge-card${has.has(b.id) ? ' on' : ''}` },
       h('span', { class: 'b-icon', 'aria-hidden': 'true' }, has.has(b.id) ? b.icon : '🔒'), h('b', {}, b.name), h('small', {}, b.desc)))),
-    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'seri', streak: store.streak(), lessons: store.doneCount() }) }, '📤 İlerlemeni paylaş'),
+    h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'seri', streak: store.streak(), lessons: store.doneCount() }) }, t('shareProgress')),
   ];
 }
 
@@ -380,41 +382,41 @@ function badgesTab() {
 function settings() {
   const s = store.state();
   const row = (label, control) => h('div', { class: 'row' }, h('span', {}, label), control);
-  show(topbar('Ayarlar', () => home()), h('main', { class: 'screen' },
+  show(topbar(t('settings'), () => home()), h('main', { class: 'screen' },
     h('section', { class: 'card stack' },
-      row('Mod', h('button', { class: 'btn small ghost', onclick: () => (kid() ? gate(() => { store.set({ mode: 'adult' }); settings(); }) : (store.set({ mode: 'kid' }), settings())) }, kid() ? 'Çocuk modu → Yetişkin' : 'Yetişkin → Çocuk modu')),
-      row('Ses ve sesli okuma', h('button', { class: 'btn small ghost', 'aria-pressed': String(s.sound), onclick: () => { store.set({ sound: !s.sound }); settings(); } }, s.sound ? 'Açık' : 'Kapalı')),
-      online && !kid() ? row('Takma ad', h('button', { class: 'btn small ghost', onclick: () => nickname(() => settings()) }, s.nickname || 'Seç')) : null),
+      row(t('mode'), h('button', { class: 'btn small ghost', onclick: () => (kid() ? gate(() => { store.set({ mode: 'adult' }); settings(); }) : (store.set({ mode: 'kid' }), settings())) }, kid() ? t('kidToAdult') : t('adultToKid'))),
+      row(t('sound'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.sound), onclick: () => { store.set({ sound: !s.sound }); settings(); } }, s.sound ? t('on') : t('off'))),
+      online && !kid() ? row(t('nickname'), h('button', { class: 'btn small ghost', onclick: () => nickname(() => settings()) }, s.nickname || t('choose'))) : null,
+      row(t('language'), h('button', { class: 'btn small ghost', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? 'Español → Türkçe' : 'Türkçe → Español'))),
     h('section', { class: 'card stack' },
-      h('button', { class: 'link left', onclick: sources }, '📚 Kaynaklar ve içerik hakkında'),
-      h('a', { class: 'link left', href: 'gizlilik.html' }, '🔒 Gizlilik politikası'),
-      h('button', { class: 'link left', onclick: () => { if (confirm('Ders ilerlemen, serin ve rozetlerin bu cihazdan silinsin mi?')) { store.reset(); toast('İlerleme sıfırlandı.'); home(); } } }, '↺ İlerlemeyi sıfırla'),
+      h('button', { class: 'link left', onclick: sources }, t('sourcesLink')),
+      h('a', { class: 'link left', href: t('privacyHref') }, t('privacy')),
+      h('button', { class: 'link left', onclick: () => { if (confirm(t('resetConfirm'))) { store.reset(); toast(t('resetDone')); home(); } } }, t('resetLink')),
       online && s.nickname ? h('button', { class: 'link left danger', onclick: async () => {
-        if (!confirm('Takma adın, yarış puanın ve yarış geçmişin sunucudan kalıcı olarak silinsin mi?')) return;
-        try { await rpc('delete_me'); forgetSession(); store.set({ nickname: '' }); toast('Yarış hesabın silindi.'); settings(); } catch (e) { toast(e.message); }
-      } }, '🗑 Yarış hesabımı sil') : null),
-    h('p', { class: 'tiny muted center' }, `Siyer Yolu ${VERSION} · Bir Saadet Evreni projesi`)));
+        if (!confirm(t('deleteConfirm'))) return;
+        try { await rpc('delete_me'); forgetSession(); store.set({ nickname: '' }); toast(t('deleteDone')); settings(); } catch (e) { toast(serverMsg(e.message)); }
+      } }, t('deleteLink')) : null),
+    h('p', { class: 'tiny muted center' }, t('footer', VERSION))));
 }
 
 function sources() {
-  show(topbar('Kaynaklar', settings), h('main', { class: 'screen' },
+  show(topbar(t('sources'), settings), h('main', { class: 'screen' },
     h('section', { class: 'card prose' },
-      h('p', {}, 'Dersler, siyer alanında yaygın kabul gören bilgilerden kısa ve sade bir dille derlenmiştir. Tarihler miladi yıl olarak ve yaklaşık verilmiştir; bazı ayrıntılarda kaynaklar arasında farklı rivayetler bulunabilir.'),
-      h('p', {}, 'Uygulamada Peygamberimizin, ehl-i beytin ve sahabenin resmi ya da tasviri bilerek yer almaz.'),
-      h('h3', {}, 'Başlıca kaynaklar'),
+      h('p', {}, t('src1')),
+      h('p', {}, t('src2')),
+      h('h3', {}, t('srcMain')),
       h('ul', {}, SOURCES.map((x) => h('li', {}, x))),
-      h('p', {}, 'Bir hata ya da eksik görürsen lütfen bize yaz: ', h('a', { href: 'mailto:saadetevreni3@gmail.com?subject=Siyer%20Yolu%20d%C3%BCzeltme' }, 'saadetevreni3@gmail.com')))));
+      h('p', {}, t('srcMail'), h('a', { href: `mailto:saadetevreni3@gmail.com?subject=${t('mailSubject')}` }, 'saadetevreni3@gmail.com')))));
 }
 
 /** Ebeveyn kapısı: yazıyla verilen iki sayının toplamı. */
 function gate(onPass) {
-  const words = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
   const a = 3 + Math.floor(Math.random() * 6); const b = 2 + Math.floor(Math.random() * 7);
-  const input = h('input', { class: 'input', inputmode: 'numeric', maxlength: 2, 'aria-label': 'Cevap' });
-  show(topbar('Ebeveyn onayı', settings), h('main', { class: 'screen' },
-    h('form', { class: 'card stack', onsubmit: (e) => { e.preventDefault(); if (Number(input.value) === a + b) onPass(); else { toast('Olmadı, tekrar dene.'); gate(onPass); } } },
-      h('p', {}, 'Bu ayarı değiştirmek için bir yetişkin şu soruyu cevaplasın:'),
-      h('h2', {}, `${words[a]} artı ${words[b]} kaç eder?`), input, h('button', { class: 'btn' }, 'Onayla'))));
+  const input = h('input', { class: 'input', inputmode: 'numeric', maxlength: 2, 'aria-label': t('gateAns') });
+  show(topbar(t('gateTitle'), settings), h('main', { class: 'screen' },
+    h('form', { class: 'card stack', onsubmit: (e) => { e.preventDefault(); if (Number(input.value) === a + b) onPass(); else { toast(t('gateTry')); gate(onPass); } } },
+      h('p', {}, t('gateAsk')),
+      h('h2', {}, t('gateQ', a, b)), input, h('button', { class: 'btn' }, t('confirm')))));
   input.focus();
 }
 

@@ -1,5 +1,6 @@
 // Instagram hikâyesi boyutunda (1080×1920) paylaşım görseli üretir ve paylaşır.
 import { toast } from './ui.js';
+import { t } from './i18n.js';
 
 const SITE = location.host || 'siyer-yolu.vercel.app';
 
@@ -18,23 +19,23 @@ function draw({ kind, streak, lessons, me, opp, mine, theirs, res }) {
   }
   g.textAlign = 'center';
   g.fillStyle = '#e9d8b4'; g.font = '700 64px Unbounded, sans-serif'; g.fillText('Siyer Yolu', 540, 260);
-  g.fillStyle = 'rgba(251,247,238,.75)'; g.font = '600 40px Manrope, sans-serif'; g.fillText('Günde 5 dakikada siyer', 540, 330);
+  g.fillStyle = 'rgba(251,247,238,.75)'; g.font = '600 40px Manrope, sans-serif'; g.fillText(t('tagline'), 540, 330);
 
   g.fillStyle = '#fbf7ee';
   if (kind === 'seri') {
     g.font = '700 300px Unbounded, sans-serif'; g.fillText(String(streak), 540, 1000);
-    g.font = '700 72px Unbounded, sans-serif'; g.fillText('günlük seri 🔥', 540, 1120);
-    g.fillStyle = '#e9d8b4'; g.font = '600 48px Manrope, sans-serif'; g.fillText(`${lessons} ders tamamlandı`, 540, 1230);
+    g.font = '700 72px Unbounded, sans-serif'; g.fillText(t('shareStreakWord'), 540, 1120);
+    g.fillStyle = '#e9d8b4'; g.font = '600 48px Manrope, sans-serif'; g.fillText(t('shareLessons', lessons), 540, 1230);
   } else {
     g.font = '700 84px Unbounded, sans-serif';
-    g.fillText(res === 'win' ? 'Kazandım! 🏆' : res === 'draw' ? 'Berabere 🤝' : 'Rövanş zamanı!', 540, 760);
+    g.fillText(res === 'win' ? t('shareWin') : res === 'draw' ? t('shareDraw') : t('shareLose'), 540, 760);
     g.font = '700 200px Unbounded, sans-serif'; g.fillText(`${mine}`, 300, 1060); g.fillText(`${theirs}`, 780, 1060);
     g.font = '700 80px Unbounded, sans-serif'; g.fillText('–', 540, 1030);
     g.fillStyle = '#e9d8b4'; g.font = '600 44px Manrope, sans-serif';
     g.fillText(me.slice(0, 16), 300, 1150); g.fillText(opp.slice(0, 16), 780, 1150);
   }
   g.fillStyle = '#c8962e'; g.beginPath(); g.roundRect(240, 1560, 600, 120, 60); g.fill();
-  g.fillStyle = '#0f3b3a'; g.font = '700 42px Manrope, sans-serif'; g.fillText('Sen de katıl', 540, 1634);
+  g.fillStyle = '#0f3b3a'; g.font = '700 42px Manrope, sans-serif'; g.fillText(t('join'), 540, 1634);
   g.fillStyle = 'rgba(251,247,238,.8)'; g.font = '600 36px Manrope, sans-serif'; g.fillText(SITE, 540, 1760);
   return c;
 }
@@ -45,9 +46,9 @@ export async function shareCard(data) {
     const c = draw(data);
     const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
     const file = new File([blob], 'siyer-yolu.png', { type: 'image/png' });
-    const text = data.kind === 'seri' ? `Siyer Yolu'nda ${data.streak} günlük serim var! 🔥 https://${SITE}` : `Siyer Yolu siyer yarışında ${data.mine}–${data.theirs}! ⚡ https://${SITE}`;
+    const text = data.kind === 'seri' ? t('shareStreakText', data.streak, `https://${SITE}`) : t('shareRaceText', data.mine, data.theirs, `https://${SITE}`);
     if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'siyer-yolu.png'; a.click();
-    toast('Görsel indirildi. Instagram hikâyende paylaşabilirsin.');
-  } catch (e) { if (e?.name !== 'AbortError') toast('Paylaşım açılamadı.'); }
+    toast(t('downloaded'));
+  } catch (e) { if (e?.name !== 'AbortError') toast(t('shareFail')); }
 }

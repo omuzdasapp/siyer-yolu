@@ -1,8 +1,8 @@
 // Çevrimdışı çalışma: dersler ve bot yarışı internetsiz de açılır. Canlı yarış istekleri (Supabase) önbelleğe alınmaz.
-const CACHE = 'siyer-yolu-v1';
+const CACHE = 'siyer-yolu-v2';
 const FILES = [
-  './', 'index.html', 'style.css', 'gizlilik.html', 'manifest.webmanifest',
-  'app.js', 'data.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',
+  './', 'index.html', 'style.css', 'gizlilik.html', 'privacidad.html', 'manifest.webmanifest',
+  'app.js', 'data.js', 'data-es.js', 'i18n.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',
   'manrope-latin-400-normal.woff2', 'manrope-latin-ext-400-normal.woff2',
   'manrope-latin-600-normal.woff2', 'manrope-latin-ext-600-normal.woff2',
   'manrope-latin-700-normal.woff2', 'manrope-latin-ext-700-normal.woff2',

@@ -2,11 +2,15 @@
 // Her ders: yetişkin metni (text), çocuk modu metni (kid) ve 4 soru.
 // Sorularda DOĞRU CEVAP HER ZAMAN İLK SEÇENEKTİR; uygulama ekranda karıştırır.
 // Soru kimliği = ders no × 10 + soru sırası (örn. 3. dersin 2. sorusu → 32). Sunucudaki soru tablosu bu kimlikleri kullanır.
+// İspanyolca içerik data-es.js dosyasındadır; dil i18n.js ile seçilir.
 // İçerik yaygın kabul gören siyer bilgilerinden derlenmiştir; yayın öncesinde bir ilahiyatçının gözden geçirmesi önerilir.
 
-export const ERAS = { mekke: 'Mekke yılları', hicret: 'Hicret', medine: 'Medine yılları' };
+import { LANG } from './i18n.js';
+import * as ES from './data-es.js';
 
-export const LESSONS = [
+const TR_ERAS = { mekke: 'Mekke yılları', hicret: 'Hicret', medine: 'Medine yılları' };
+
+const TR_LESSONS = [
   {
     n: 1, era: 'mekke', year: '571', icon: '🐘', title: 'Fil Yılı ve doğum',
     text: 'Peygamberimiz Hz. Muhammed (s.a.v.) 571 yılında Mekke\'de dünyaya geldi. Bu yıl, Yemen valisi Ebrehe\'nin fillerden oluşan ordusuyla Kâbe\'yi yıkmak için gelip başaramadığı yıldır; bu yüzden "Fil Yılı" diye anılır ve olay Kur\'an\'da Fil suresinde anlatılır. Babası Abdullah, o doğmadan birkaç ay önce vefat etmişti. Annesi Hz. Âmine, onu dedesi Abdülmuttalib\'e müjdeledi. Dedesi torununa, Araplar arasında pek bilinmeyen bir isim verdi: "çokça övülen" anlamına gelen Muhammed.',
@@ -229,7 +233,7 @@ export const LESSONS = [
   },
 ];
 
-export const BADGES = [
+const TR_BADGES = [
   { id: 'ilk', icon: '🌱', name: 'İlk adım', desc: 'İlk dersini bitir' },
   { id: 'tam', icon: '🎯', name: 'Tam isabet', desc: 'Bir testte 3/3 yap' },
   { id: 'seri3', icon: '🔥', name: '3 gün seri', desc: '3 gün üst üste ders yap' },
@@ -243,13 +247,19 @@ export const BADGES = [
   { id: 'galip10', icon: '👑', name: 'On galibiyet', desc: '10 yarış kazan' },
 ];
 
-export const SOURCES = [
+const TR_SOURCES = [
   'Kur\'ân-ı Kerîm ve meali (Diyanet İşleri Başkanlığı)',
   'İbn Hişâm, es-Sîretü\'n-Nebeviyye',
   'Buhârî, el-Câmiu\'s-Sahîh',
   'TDV İslâm Ansiklopedisi, "Muhammed" maddesi',
   'Diyanet İşleri Başkanlığı, Hz. Muhammed\'in (s.a.v.) Hayatı',
 ];
+
+const es = LANG === 'es';
+export const ERAS = es ? ES.ERAS : TR_ERAS;
+export const LESSONS = es ? ES.LESSONS : TR_LESSONS;
+export const BADGES = es ? ES.BADGES : TR_BADGES;
+export const SOURCES = es ? ES.SOURCES : TR_SOURCES;
 
 // Yarış soru havuzu: { id, lesson, q, o } (o[0] doğru)
 export const POOL = LESSONS.flatMap((l) => l.q.map((x, i) => ({ id: l.n * 10 + i + 1, lesson: l.n, ...x })));

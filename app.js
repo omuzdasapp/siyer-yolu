@@ -6,8 +6,9 @@ import { online, rpc, forgetSession } from './net.js';
 import { onlineMatch, botMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
 import { t, LANG, setLang, serverMsg } from './i18n.js';
+import { HADIS } from './hadis.js';
 
-export const VERSION = '1.1.0';
+export const VERSION = '1.3.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -385,6 +386,7 @@ function settings() {
   show(topbar(t('settings'), () => home()), h('main', { class: 'screen' },
     h('section', { class: 'card stack' },
       row(t('mode'), h('button', { class: 'btn small ghost', onclick: () => (kid() ? gate(() => { store.set({ mode: 'adult' }); settings(); }) : (store.set({ mode: 'kid' }), settings())) }, kid() ? t('kidToAdult') : t('adultToKid'))),
+      row(t('hadisSetting'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.hadis !== false), onclick: () => { store.set({ hadis: s.hadis === false }); settings(); } }, s.hadis !== false ? t('on') : t('off'))),
       row(t('sound'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.sound), onclick: () => { store.set({ sound: !s.sound }); settings(); } }, s.sound ? t('on') : t('off'))),
       online && !kid() ? row(t('nickname'), h('button', { class: 'btn small ghost', onclick: () => nickname(() => settings()) }, s.nickname || t('choose'))) : null,
       row(t('language'), h('button', { class: 'btn small ghost', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? 'Español → Türkçe' : 'Türkçe → Español'))),
@@ -421,9 +423,53 @@ function gate(onPass) {
 }
 
 /* ───────── Başlat ───────── */
+/* ───────── Açılış hadisi ───────── */
+function hadis(then) {
+  const n = HADIS.length;
+  const last = store.state().lastHadis;
+  let i = Math.floor(Math.random() * n);
+  if (n > 1 && i === last) i = (i + 1) % n;
+  const es = LANG === 'es';
+  const ar = h('p', { class: 'hadis-ar', lang: 'ar', dir: 'rtl' });
+  const text = h('blockquote', { class: 'hadis-text' });
+  const src = h('p', { class: 'hadis-src' });
+  const count = h('span', { class: 'hadis-count', 'aria-live': 'polite' });
+  const paint = () => {
+    const x = HADIS[i];
+    store.set({ lastHadis: i });
+    ar.textContent = x.ar;
+    text.textContent = `“${es ? x.es : x.tr}”`;
+    main.classList.toggle('long', (es ? x.es : x.tr).length > 130);
+    src.textContent = `— ${x.src[es ? 1 : 0]}`;
+    count.textContent = `${i + 1} / ${n}`;
+  };
+  const go = (d) => { i = (i + d + n) % n; paint(); };
+  const main = h('main', { class: 'screen center hadis' },
+    h('div', { class: 'seal', 'aria-hidden': 'true' }, '۞'),
+    h('p', { class: 'eyebrow' }, t('hadisEyebrow')),
+    ar, text, src,
+    h('div', { class: 'hadis-nav' },
+      h('button', { class: 'icon', 'aria-label': t('hadisPrev'), onclick: () => go(-1) }, '‹'),
+      count,
+      h('button', { class: 'icon', 'aria-label': t('hadisNext'), onclick: () => go(1) }, '›')),
+    h('button', { class: 'btn', onclick: then }, t('hadisGo')));
+  // Kaydırarak da geçilebilir.
+  let x0 = null;
+  main.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  main.addEventListener('touchend', (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  paint();
+  show(main);
+}
+
 function start() {
   document.getElementById('splash')?.remove();
-  if (!store.state().mode) onboarding(); else home();
+  if (!store.state().mode) onboarding();
+  else if (store.state().hadis !== false) hadis(() => home());
+  else home();
 }
 start();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -163,6 +163,16 @@ a { color: var(--green); }
 .confetti span { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall 2s ease-in forwards; }
 @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
 
+.hadis { gap: 14px; min-height: 100vh; min-height: 100dvh; justify-content: center; }
+.hadis-text { margin: 0; font: 600 1.35rem/1.55 var(--body, inherit); color: var(--ink); max-width: 30ch; text-wrap: balance; }
+.hadis-ar { margin: 4px 0 0; font: 400 1.6rem/1.9 'Noto Naskh Arabic', 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif; color: var(--ink-2); max-width: 26ch; }
+.hadis-nav { display: flex; align-items: center; gap: 18px; margin: 2px 0 8px; }
+.hadis-nav .icon { font-size: 1.6rem; line-height: 1; }
+.hadis-count { min-width: 64px; color: var(--muted, #6b7a78); font-weight: 600; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.hadis-src { margin: 0; color: var(--gold-deep); font-weight: 600; font-size: .95rem; }
+body.kid .hadis-text { font-size: 1.5rem; }
+.hadis.long .hadis-text { font-size: 1.1rem; } .hadis.long .hadis-ar { font-size: 1.3rem; }
+
 .splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: var(--ink); color: var(--on-ink); z-index: 50; }
 .splash .seal { background: var(--gold); color: var(--ink); }
 .splash h1 { color: var(--gold-soft); }

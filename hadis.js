@@ -1,3 +1,4 @@
+// NOT: hadis.json bu dosyadan üretilir (bildirim sunucusu onu okur). Bu listeyi değiştirirsen hadis.json da güncellenmeli.
 // Açılışta gösterilen kısa hadisler: Arapça metin (ar), Türkçe meal (tr), İspanyolca meal (es), kaynak (src: [Türkçe, İspanyolca]).
 // Yalnızca meşhur ve sahih ya da hasen kabul edilen rivayetler; kaynak olarak eserin adı verilir.
 // Arapça metinler harekesiz verilmiştir. Yayın öncesinde bir ilahiyatçının gözden geçirmesi önerilir.

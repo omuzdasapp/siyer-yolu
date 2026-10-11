@@ -7,8 +7,9 @@ import { onlineMatch, botMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
 import { t, LANG, setLang, serverMsg } from './i18n.js';
 import { HADIS } from './hadis.js';
+import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -387,6 +388,9 @@ function settings() {
     h('section', { class: 'card stack' },
       row(t('mode'), h('button', { class: 'btn small ghost', onclick: () => (kid() ? gate(() => { store.set({ mode: 'adult' }); settings(); }) : (store.set({ mode: 'kid' }), settings())) }, kid() ? t('kidToAdult') : t('adultToKid'))),
       row(t('hadisSetting'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.hadis !== false), onclick: () => { store.set({ hadis: s.hadis === false }); settings(); } }, s.hadis !== false ? t('on') : t('off'))),
+      pushSupported() ? row(t('pushSetting'), h('button', { class: 'btn small ghost', 'aria-pressed': String(Boolean(s.push)), onclick: async () => { await pushToggle(!s.push); settings(); } }, s.push ? t('on') : t('off'))) : null,
+      pushSupported() && s.push ? row(t('pushHour'), h('select', { class: 'btn small ghost', 'aria-label': t('pushHour'), onchange: async (e) => { await pushToggle(true, Number(e.target.value)); settings(); } },
+        Array.from({ length: 17 }, (_, k) => k + 6).map((hh) => h('option', { value: hh, selected: hh === (s.pushHour ?? 8) }, `${String(hh).padStart(2, '0')}:00`)))) : null,
       row(t('sound'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.sound), onclick: () => { store.set({ sound: !s.sound }); settings(); } }, s.sound ? t('on') : t('off'))),
       online && !kid() ? row(t('nickname'), h('button', { class: 'btn small ghost', onclick: () => nickname(() => settings()) }, s.nickname || t('choose'))) : null,
       row(t('language'), h('button', { class: 'btn small ghost', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? 'Español → Türkçe' : 'Türkçe → Español'))),
@@ -424,11 +428,18 @@ function gate(onPass) {
 
 /* ───────── Başlat ───────── */
 /* ───────── Açılış hadisi ───────── */
-function hadis(then) {
+async function pushToggle(on, hour) {
+  try {
+    const r = on ? await enablePush(hour) : (await disablePush(), true);
+    if (r === 'denied') toast(t('pushDenied'), 4500); else if (on) toast(t('pushOn'));
+  } catch { toast(t('pushErr')); }
+}
+
+function hadis(then, startAt) {
   const n = HADIS.length;
   const last = store.state().lastHadis;
-  let i = Math.floor(Math.random() * n);
-  if (n > 1 && i === last) i = (i + 1) % n;
+  let i = Number.isInteger(startAt) && startAt >= 0 && startAt < n ? startAt : Math.floor(Math.random() * n);
+  if (startAt == null && n > 1 && i === last) i = (i + 1) % n;
   const es = LANG === 'es';
   const ar = h('p', { class: 'hadis-ar', lang: 'ar', dir: 'rtl' });
   const text = h('blockquote', { class: 'hadis-text' });
@@ -452,7 +463,8 @@ function hadis(then) {
       h('button', { class: 'icon', 'aria-label': t('hadisPrev'), onclick: () => go(-1) }, '‹'),
       count,
       h('button', { class: 'icon', 'aria-label': t('hadisNext'), onclick: () => go(1) }, '›')),
-    h('button', { class: 'btn', onclick: then }, t('hadisGo')));
+    h('button', { class: 'btn', onclick: then }, t('hadisGo')),
+    pushSupported() && !store.state().push ? h('button', { class: 'link', onclick: async (e) => { e.target.disabled = true; await pushToggle(true); if (store.state().push) e.target.remove(); else e.target.disabled = false; } }, t('pushAsk')) : null);
   // Kaydırarak da geçilebilir.
   let x0 = null;
   main.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
@@ -467,9 +479,13 @@ function hadis(then) {
 
 function start() {
   document.getElementById('splash')?.remove();
+  const q = new URLSearchParams(location.search).get('hadis');
+  if (q != null) history.replaceState(null, '', location.pathname);
   if (!store.state().mode) onboarding();
+  else if (q != null) hadis(() => home(), Number(q));
   else if (store.state().hadis !== false) hadis(() => home());
   else home();
+  refreshPush();
 }
 start();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

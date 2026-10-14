@@ -3,6 +3,7 @@
 const KEY = 'siyer-yolu-dil';
 const saved = (() => { try { return localStorage.getItem(KEY); } catch { return null; } })();
 const device = (navigator.languages?.[0] || navigator.language || 'tr').toLowerCase();
+export const langChosen = saved === 'es' || saved === 'tr';
 export const LANG = saved === 'es' || saved === 'tr' ? saved : (device.startsWith('es') ? 'es' : 'tr');
 document.documentElement.lang = LANG;
 
@@ -41,7 +42,7 @@ const S = {
     opp: 'Rakip', oppAnswered: 'Rakip cevapladı', connecting: 'Bağlanıyor…', exit: 'Çık',
     exitConfirm: 'Yarıştan çıkılsın mı? Kalan soruların puanı 0 sayılır.', training: 'Antrenman', liveRace: 'Canlı yarış',
     slow: 'Bağlantı yavaş…', timeUp: 'Süre doldu.', rightPts: (p) => `Doğru! +${p}`, wrong: 'Yanlış',
-    youPts: (p) => `Sen +${p}`, youX: 'Sen ✗', youNone: 'Sen cevap vermedin', oppPts: (p) => `Rakip +${p}`, oppX: 'Rakip ✗', oppNone: 'Rakip cevap vermedi',
+    youPts: (p) => `Sen +${p}`, youX: 'Sen ✗', youNone: 'Sen cevap vermedin', oppPts: (p) => `Rakip +${p}`, oppX: 'Rakip ✗', oppNone: 'Rakip cevap vermedi', oppPending: 'Rakip cevapladı…', youPending: 'Sen …',
     startsIn: (n) => `Başlıyor: ${n}`, matchedWith: (n) => `${n} ile eşleştin`, isBot: 'Bu bir bilgisayar rakiptir.',
     done: 'Bitti', nextComing: 'Sıradaki soru geliyor…', results: 'Sonuçlar…',
     won: 'Kazandın!', lost: 'Bu sefer rakip kazandı', draw: 'Berabere', ratingDelta: (d) => `Puanın ${d >= 0 ? '+' : ''}${d}`,
@@ -68,6 +69,21 @@ const S = {
     shareStreakText: (n, url) => `Siyer Yolu'nda ${n} günlük serim var! 🔥 ${url}`, shareRaceText: (a, b, url) => `Siyer Yolu siyer yarışında ${a}–${b}! ⚡ ${url}`,
     downloaded: 'Görsel indirildi. Instagram hikâyende paylaşabilirsin.', shareFail: 'Paylaşım açılamadı.',
     // Ağ
+    mapTitle: '📍 Nerede oldu?', mapNote: 'Konumlar yaklaşıktır.',
+    // Arkadaşlar ve odalar
+    groupRace: '👥 3-4 kişilik yarış', roomCreate: '🔒 Oda kur', roomJoin: '🔢 Kodla katıl', friends: '🤝 Arkadaşlar',
+    friendPh: 'Arkadaşının takma adı', addFriend: 'Arkadaş ekle', addFriendNote: (n) => `Arkadaşının takma adını yaz. Senin takma adın: ${n}`,
+    sendRequest: 'İstek gönder', requestSent: 'İstek gönderildi', friendAdded: 'Artık arkadaşsınız 🤝',
+    invites: 'Oda davetleri', inviteFrom: (n) => `${n} seni odasına çağırıyor`, joinBtn: 'Katıl', incoming: 'Gelen istekler',
+    accept: 'Kabul et', decline: 'Reddet', myFriends: 'Arkadaşlarım', onlineNow: 'Şu an çevrimiçi', removeFriend: (n) => `${n} arkadaşlıktan çıkarılsın mı?`,
+    outgoing: 'Gönderilen istekler', pending: 'bekliyor', cancel: 'Vazgeç', noFriends: 'Henüz arkadaşın yok. Yukarıdan takma adla istek gönderebilirsin.',
+    roomCode: 'Oda kodu', roomCodeQ: '4 haneli oda kodunu yaz', shareCode: 'Kodu paylaş', privateRoom: 'Özel oda', players: 'Oyuncular',
+    startRace: '▶ Yarışı başlat', emptySlot: 'Boş yer', startingSoon: 'Yarış birazdan başlıyor…', waitingPlayers: (n) => `Oyuncular bekleniyor (${n}/4). 3 kişi olunca başlar.`,
+    needTwo: 'Başlamak için en az 2 kişi gerekli. Kodu paylaş ya da arkadaşını davet et.', canStart: (n) => `${n} kişi hazır. İstersen başlat, 4 kişiye kadar bekleyebilirsin.`,
+    hostStarts: (n) => `Yarışı oda sahibi (${n}) başlatacak.`, inviteFriends: 'Arkadaşlarını davet et', invite: 'Davet et', invited: 'Davet edildi ✓',
+    shareCodeText: (c) => `Siyer Yolu'nda yarışalım! Uygulamada Yarış → "Kodla katıl" deyip ${c} kodunu yaz.`, copied: 'Panoya kopyalandı',
+    othersRight: (k, n) => `diğerleri: ${k}/${n} doğru`, place: (n) => `${n}. oldun`, friendlyNote: 'Özel oda yarışları dostluk maçıdır, puanı etkilemez.',
+    newGroup: 'Yeni grup yarışı', newRoom: 'Yeni oda kur',
     netErr: 'Bağlantı hatası', serverErr: 'Sunucuya ulaşılamadı.', liveOff: 'Canlı yarış henüz açılmadı.',
   },
   es: {
@@ -99,7 +115,7 @@ const S = {
     opp: 'Rival', oppAnswered: 'El rival respondió', connecting: 'Conectando…', exit: 'Salir',
     exitConfirm: '¿Salir de la competencia? Las preguntas restantes contarán 0 puntos.', training: 'Práctica', liveRace: 'Competencia en vivo',
     slow: 'Conexión lenta…', timeUp: 'Se acabó el tiempo.', rightPts: (p) => `¡Correcto! +${p}`, wrong: 'Incorrecto',
-    youPts: (p) => `Tú +${p}`, youX: 'Tú ✗', youNone: 'No respondiste', oppPts: (p) => `Rival +${p}`, oppX: 'Rival ✗', oppNone: 'El rival no respondió',
+    youPts: (p) => `Tú +${p}`, youX: 'Tú ✗', youNone: 'No respondiste', oppPts: (p) => `Rival +${p}`, oppX: 'Rival ✗', oppNone: 'El rival no respondió', oppPending: 'El rival respondió…', youPending: 'Tú …',
     startsIn: (n) => `Empieza en ${n}`, matchedWith: (n) => `Juegas contra ${n}`, isBot: 'Este rival es una computadora.',
     done: 'Terminado', nextComing: 'Viene la siguiente pregunta…', results: 'Resultados…',
     won: '¡Ganaste!', lost: 'Esta vez ganó el rival', draw: 'Empate', ratingDelta: (d) => `Tus puntos ${d >= 0 ? '+' : ''}${d}`,
@@ -124,6 +140,20 @@ const S = {
     shareWin: '¡Gané! 🏆', shareDraw: 'Empate 🤝', shareLose: '¡Hora de la revancha!', join: 'Únete tú también',
     shareStreakText: (n, url) => `¡Llevo una racha de ${n} ${n === 1 ? 'día' : 'días'} en Siyer Yolu! 🔥 ${url}`, shareRaceText: (a, b, url) => `¡${a}–${b} en la competencia de Sira de Siyer Yolu! ⚡ ${url}`,
     downloaded: 'Imagen descargada. Puedes compartirla en tus historias de Instagram.', shareFail: 'No se pudo abrir el menú para compartir.',
+    mapTitle: '📍 ¿Dónde ocurrió?', mapNote: 'Las ubicaciones son aproximadas.',
+    groupRace: '👥 Competencia de 3-4', roomCreate: '🔒 Crear sala', roomJoin: '🔢 Entrar con código', friends: '🤝 Amigos',
+    friendPh: 'Apodo de tu amigo', addFriend: 'Agregar amigo', addFriendNote: (n) => `Escribe el apodo de tu amigo. Tu apodo es: ${n}`,
+    sendRequest: 'Enviar solicitud', requestSent: 'Solicitud enviada', friendAdded: 'Ahora son amigos 🤝',
+    invites: 'Invitaciones a salas', inviteFrom: (n) => `${n} te invita a su sala`, joinBtn: 'Entrar', incoming: 'Solicitudes recibidas',
+    accept: 'Aceptar', decline: 'Rechazar', myFriends: 'Mis amigos', onlineNow: 'En línea ahora', removeFriend: (n) => `¿Quitar a ${n} de tus amigos?`,
+    outgoing: 'Solicitudes enviadas', pending: 'pendiente', cancel: 'Cancelar', noFriends: 'Aún no tienes amigos. Arriba puedes enviar una solicitud por apodo.',
+    roomCode: 'Código de sala', roomCodeQ: 'Escribe el código de 4 cifras', shareCode: 'Compartir código', privateRoom: 'Sala privada', players: 'Jugadores',
+    startRace: '▶ Empezar', emptySlot: 'Lugar libre', startingSoon: 'La competencia empieza en un momento…', waitingPlayers: (n) => `Esperando jugadores (${n}/4). Empieza cuando haya 3.`,
+    needTwo: 'Se necesitan al menos 2 personas. Comparte el código o invita a un amigo.', canStart: (n) => `${n} listos. Puedes empezar o esperar hasta 4.`,
+    hostStarts: (n) => `El creador de la sala (${n}) va a empezar.`, inviteFriends: 'Invita a tus amigos', invite: 'Invitar', invited: 'Invitado ✓',
+    shareCodeText: (c) => `¡Compitamos en Siyer Yolu! En la app ve a Competencia → "Entrar con código" y escribe ${c}.`, copied: 'Copiado',
+    othersRight: (k, n) => `otros: ${k}/${n} correctas`, place: (n) => `Quedaste en el puesto ${n}`, friendlyNote: 'Las salas privadas son partidas amistosas y no cambian tus puntos.',
+    newGroup: 'Nueva competencia en grupo', newRoom: 'Crear otra sala',
     netErr: 'Error de conexión', serverErr: 'No se pudo conectar con el servidor.', liveOff: 'La competencia en vivo aún no está abierta.',
   },
 };
@@ -138,6 +168,18 @@ const SERVER_ES = {
   'Maç bulunamadı': 'No se encontró la partida.',
   'Geçersiz soru': 'Pregunta no válida.',
   'Maç henüz bitmedi': 'La partida aún no ha terminado.',
+  'Bu takma adla bir oyuncu yok.': 'No hay ningún jugador con ese apodo.',
+  'Kendine istek gönderemezsin.': 'No puedes enviarte una solicitud a ti mismo.',
+  'Zaten arkadaşsınız.': 'Ya son amigos.',
+  'Bugün çok fazla istek gönderdin.': 'Hoy enviaste demasiadas solicitudes.',
+  'İstek bulunamadı.': 'No se encontró la solicitud.',
+  'Şu an oda kurulamıyor, biraz sonra dene.': 'Ahora no se puede crear una sala; inténtalo más tarde.',
+  'Bu kodla açık bir oda yok.': 'No hay ninguna sala abierta con ese código.',
+  'Oda dolu.': 'La sala está llena.',
+  'Oda bulunamadı.': 'No se encontró la sala.',
+  'Yalnızca arkadaşlarını davet edebilirsin.': 'Solo puedes invitar a tus amigos.',
+  'Yarışı yalnızca oda sahibi başlatabilir.': 'Solo el creador de la sala puede empezar.',
+  'Başlamak için en az 2 kişi gerekli.': 'Se necesitan al menos 2 personas para empezar.',
 };
 export const serverMsg = (m) => (LANG === 'es' ? SERVER_ES[m] || m : m);
 

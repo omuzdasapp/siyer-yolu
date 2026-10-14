@@ -1,8 +1,8 @@
 // Çevrimdışı çalışma: dersler ve bot yarışı internetsiz de açılır. Canlı yarış istekleri (Supabase) önbelleğe alınmaz.
-const CACHE = 'siyer-yolu-v5';
+const CACHE = 'siyer-yolu-v6';
 const FILES = [
   './', 'index.html', 'style.css', 'gizlilik.html', 'privacidad.html', 'manifest.webmanifest',
-  'app.js', 'data.js', 'data-es.js', 'i18n.js', 'hadis.js', 'push.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',
+  'app.js', 'data.js', 'data-es.js', 'data-tr-2.js', 'data-es-2.js', 'map.js', 'map-land.js', 'i18n.js', 'hadis.js', 'push.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',
   'manrope-latin-400-normal.woff2', 'manrope-latin-ext-400-normal.woff2',
   'manrope-latin-600-normal.woff2', 'manrope-latin-ext-600-normal.woff2',
   'manrope-latin-700-normal.woff2', 'manrope-latin-ext-700-normal.woff2',
@@ -24,6 +24,7 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return; // sunucu istekleri doğrudan ağa gider
+  if (url.pathname.includes('/ses/')) return; // ses dosyaları doğrudan ağdan (parça parça) çalınır
   if (e.request.mode === 'navigate') {
     e.respondWith(caches.match(e.request, { ignoreSearch: true })
       .then((hit) => hit || fetch(e.request.url, { redirect: 'follow' }))

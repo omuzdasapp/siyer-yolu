@@ -183,3 +183,43 @@ body.kid .lesson-text { font-size: 1.25rem; }
 body.kid .opt { font-size: 1.15rem; padding: 18px; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Arkadaşlar ve odalar */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.two .btn { padding-left: 8px; padding-right: 8px; }
+.count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; margin-left: 8px; padding: 0 6px; border-radius: 999px; background: var(--gold); color: #fff; font-size: .8rem; font-weight: 700; }
+.board li .btn.small { flex: none; }
+.board li .icon { flex: none; }
+.input.code { text-align: center; font: 700 2rem var(--display); letter-spacing: .4em; }
+.room-code { text-align: center; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.room-code b { font: 700 2.6rem var(--display); letter-spacing: .25em; color: var(--ink); }
+.slots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.slots li { background: var(--surface); border-radius: 16px; padding: 14px 12px; box-shadow: var(--shadow); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; min-height: 52px; overflow: hidden; }
+.slots li b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.slots li .pts { margin-left: auto; color: var(--muted); font-size: .85rem; }
+.slots li.me { background: var(--gold-soft); }
+.slots li.empty { background: transparent; box-shadow: none; border: 2px dashed var(--line); color: var(--muted); justify-content: center; align-items: center; font-size: .9rem; }
+.multi { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.multi li { background: var(--surface); border-radius: 14px; padding: 8px 10px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px; min-width: 0; }
+.multi li b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .88rem; }
+.multi li .score { font: 700 1.15rem var(--display); color: var(--ink); }
+.multi li.me { background: var(--gold-soft); }
+.podium { width: 100%; text-align: left; }
+[hidden] { display: none !important; }
+
+/* Ders haritası */
+.map-card { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 14px; }
+.map { width: 100%; height: auto; border-radius: 12px; display: block; }
+.map-sea { fill: #cfe3e0; }
+.map-land { fill: #f1e4c8; stroke: #c9b48a; stroke-width: .8; stroke-linejoin: round; }
+.map-sea-label { fill: #5f8f8a; font: italic 600 9px var(--body); letter-spacing: .08em; }
+.map-route { fill: none; stroke: var(--gold-deep); stroke-width: 1.6; stroke-dasharray: 4 3; stroke-linecap: round; stroke-linejoin: round; }
+.map-dot { fill: var(--green); stroke: #fff; stroke-width: 1.5; }
+.map-dot.focus { fill: var(--gold); }
+.map-pulse { fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: .6; animation: mapPulse 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes mapPulse { from { transform: scale(.5); opacity: .8; } to { transform: scale(1.4); opacity: 0; } }
+.map-label { font: 700 10px var(--body); fill: #1d2b2a; paint-order: stroke; stroke: rgba(255,255,255,.85); stroke-width: 3px; stroke-linejoin: round; }
+.map-label.focus { font-size: 11px; fill: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .map-pulse { animation: none; } }
+.map-ctx { fill: #a39274; }
+.map-ctx-label { font: 600 8.5px var(--body); fill: #8a7a5c; }

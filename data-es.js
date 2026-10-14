@@ -13,7 +13,7 @@ export const LESSONS = [
       { q: '¿En qué año nació el Profeta?', o: ['571', '610', '622', '632'] },
       { q: '¿Con qué nombre se conoce el año de su nacimiento?', o: ['Año del Elefante', 'Año de la Tristeza', 'Año de la Hégira', 'Año de la Despedida'] },
       { q: '¿Cómo se llamaba la madre del Profeta?', o: ['Amina', 'Halima', 'Jadiya', 'Fátima'] },
-      { q: '¿Quién le puso el nombre de "Muhammad"?', o: ['Su abuelo Abd al-Muttalib', 'Su tío Abu Tálib', 'Su nodriza Halima', 'Waraqa ibn Náwfal'] },
+      { q: '¿Quién le puso al Profeta el nombre de "Muhammad"?', o: ['Su abuelo Abd al-Muttalib', 'Su tío Abu Tálib', 'Su nodriza Halima', 'Waraqa ibn Náwfal'] },
     ],
   },
   {
@@ -23,7 +23,7 @@ export const LESSONS = [
     q: [
       { q: '¿Quién fue la nodriza del Profeta?', o: ['Halima', 'Amina', 'Sumayya', 'Aisha'] },
       { q: '¿Cuántos años tenía el Profeta cuando falleció su madre?', o: ['6', '2', '12', '25'] },
-      { q: 'Tras la muerte de su abuelo, ¿quién lo protegió?', o: ['Su tío Abu Tálib', 'Su tío Hamza', 'Abu Bakr', 'Zayd ibn Háritha'] },
+      { q: 'Tras la muerte de su abuelo Abd al-Muttalib, ¿quién protegió al Profeta?', o: ['Su tío Abu Tálib', 'Su tío Hamza', 'Abu Bakr', 'Zayd ibn Háritha'] },
       { q: '¿Qué trabajo hizo el Profeta en su juventud?', o: ['Pastor', 'Herrero', 'Pescador', 'Agricultor'] },
     ],
   },
@@ -34,7 +34,7 @@ export const LESSONS = [
     q: [
       { q: '¿Qué sobrenombre le dieron los mequíes al Profeta?', o: ['al-Amín', 'as-Siddiq', 'al-Faruq', 'Sayfullah'] },
       { q: '¿Para qué se creó el Hilf al-Fudul?', o: ['Para ayudar a quien sufría una injusticia', 'Para organizar caravanas comerciales', 'Para reparar la Kaaba', 'Para un concurso de poesía'] },
-      { q: '¿Cómo resolvió la disputa de la Piedra Negra?', o: ['Extendió su manto y las tribus la llevaron juntas', 'Lo echó a suertes', 'Eligió al jefe más anciano', 'Dejó la piedra donde estaba'] },
+      { q: '¿Cómo resolvió el Profeta la disputa por la Piedra Negra durante la reconstrucción de la Kaaba?', o: ['Extendió su manto y las tribus la llevaron juntas', 'Lo echó a suertes', 'Eligió al jefe más anciano', 'Dejó la piedra donde estaba'] },
       { q: '¿Cuántos años tenía el Profeta cuando se reparó la Kaaba?', o: ['35', '25', '40', '53'] },
     ],
   },
@@ -67,7 +67,7 @@ export const LESSONS = [
     q: [
       { q: '¿Quién fue la primera persona en creer?', o: ['Jadiya', 'Abu Bakr', 'Ali', 'Umar'] },
       { q: '¿Quién fue el primer musulmán entre los niños?', o: ['Ali', 'Zayd ibn Háritha', 'Uthmán', 'Hamza'] },
-      { q: '¿De quién era la casa donde se reunían en secreto los musulmanes?', o: ['De al-Arqam', 'De Abu Tálib', 'De Waraqa', 'De Abu Yahl'] },
+      { q: 'En La Meca, ¿de quién era la casa donde se reunían en secreto los primeros musulmanes?', o: ['De al-Arqam', 'De Abu Tálib', 'De Waraqa', 'De Abu Yahl'] },
       { q: '¿Quién se hizo musulmán por invitación de Abu Bakr?', o: ['Uthmán', 'Hamza', 'Umar', 'Jálid ibn al-Walid'] },
     ],
   },
@@ -112,7 +112,7 @@ export const LESSONS = [
       { q: '¿Entre qué dos mezquitas fue el viaje del Isra?', o: ['Mezquita Sagrada – Mezquita al-Aqsa', 'Quba – Mezquita del Profeta', 'Mezquita Sagrada – Quba', 'Mezquita del Profeta – Mezquita al-Aqsa'] },
       { q: '¿Qué acto de adoración se prescribió en el Miray?', o: ['Las cinco oraciones diarias', 'El ayuno', 'El zakat', 'La peregrinación'] },
       { q: '¿Cuál es el sobrenombre de Abu Bakr que significa "el que confirma la verdad"?', o: ['as-Siddiq', 'al-Faruq', 'Dhun-Nurayn', 'al-Amín'] },
-      { q: '¿En la primera aleya de qué sura se narra este viaje?', o: ['Al-Isra', 'An-Naym', 'Al-Qadr', 'Al-Fil'] },
+      { q: '¿En la primera aleya de qué sura se narra el viaje nocturno (Isra)?', o: ['Al-Isra', 'An-Naym', 'Al-Qadr', 'Al-Fil'] },
     ],
   },
   {
@@ -144,7 +144,7 @@ export const LESSONS = [
     q: [
       { q: '¿Cómo se llama a quienes emigraron de La Meca a Medina?', o: ['Muhayirun', 'Ansar', 'Ahl as-Suffa', 'Tabiun'] },
       { q: '¿Cómo se llama a los musulmanes de Medina?', o: ['Ansar', 'Muhayirun', 'Hanif', 'Mequíes'] },
-      { q: '¿Qué le pidió Abd ar-Rahmán ibn Awf a su hermano?', o: ['Que le mostrara el camino al mercado', 'La mitad de sus bienes', 'Una casa', 'Un camello'] },
+      { q: '¿Qué le pidió Abd ar-Rahmán ibn Awf a su hermano ansarí, que le ofreció la mitad de sus bienes?', o: ['Que le mostrara el camino al mercado', 'La mitad de sus bienes', 'Una casa', 'Un camello'] },
       { q: '¿Cómo se llama la mezquita construida en Medina?', o: ['La Mezquita del Profeta', 'La Mezquita al-Aqsa', 'La Cúpula de la Roca', 'La Mezquita Sagrada'] },
     ],
   },
@@ -155,7 +155,7 @@ export const LESSONS = [
     q: [
       { q: '¿En qué mes fue la batalla de Badr?', o: ['Ramadán', 'Muharram', 'Dhul-Hiyya', 'Rayab'] },
       { q: '¿Cuántos musulmanes había aproximadamente en Badr?', o: ['313', '1000', '3000', '70'] },
-      { q: '¿Cómo podían quedar libres los prisioneros que sabían leer y escribir?', o: ['Enseñando a leer y escribir a diez niños', 'Pagando oro', 'Trabajando un año', 'Recitando poesía'] },
+      { q: '¿Cómo podían quedar libres los prisioneros de Badr que sabían leer y escribir?', o: ['Enseñando a leer y escribir a diez niños', 'Pagando oro', 'Trabajando un año', 'Recitando poesía'] },
       { q: '¿En qué año fue la batalla de Badr?', o: ['624', '622', '627', '630'] },
     ],
   },
@@ -164,10 +164,10 @@ export const LESSONS = [
     text: 'Los mequíes, queriendo vengar Badr, llegaron al año siguiente a las faldas del monte Uhud. El Profeta colocó a cincuenta arqueros al mando de Abdullah ibn Yubayr sobre una colina y les dijo: "Pase lo que pase, no abandonen su puesto". Al comienzo de la batalla los musulmanes llevaban ventaja; pero la mayoría de los arqueros creyó que la batalla había terminado y dejó la colina. Al ser atacados por la espalda a través de ese hueco, los musulmanes sufrieron graves pérdidas; Hamza, el tío del Profeta, murió como mártir. Uhud es una lección sobre la importancia de obedecer las órdenes y de la paciencia.',
     kid: 'En Uhud, el Profeta dijo a los arqueros: "No se vayan de la colina". Algunos pensaron que la batalla había terminado y se fueron, y los musulmanes pasaron por un momento difícil. Hamza, el tío del Profeta, murió como mártir. Esta historia nos enseña lo importante que es escuchar y obedecer.',
     q: [
-      { q: '¿Qué ordenó el Profeta a los arqueros?', o: ['No abandonar la colina pasara lo que pasara', 'Atacar de inmediato', 'Retirarse', 'Recoger el botín'] },
+      { q: 'En Uhud, ¿qué ordenó el Profeta a los arqueros?', o: ['No abandonar la colina pasara lo que pasara', 'Atacar de inmediato', 'Retirarse', 'Recoger el botín'] },
       { q: '¿Qué tío del Profeta murió como mártir en Uhud?', o: ['Hamza', 'Abu Tálib', 'Al-Abbás', 'Abu Lahab'] },
       { q: '¿En qué año fue la batalla de Uhud?', o: ['625', '624', '628', '632'] },
-      { q: '¿Quién era el comandante de los arqueros?', o: ['Abdullah ibn Yubayr', 'Jálid ibn al-Walid', 'Ali', 'Sa\'d ibn Muadh'] },
+      { q: '¿Quién era el comandante de los arqueros en Uhud?', o: ['Abdullah ibn Yubayr', 'Jálid ibn al-Walid', 'Ali', 'Sa\'d ibn Muadh'] },
     ],
   },
   {
@@ -177,8 +177,8 @@ export const LESSONS = [
     q: [
       { q: '¿De quién fue la idea de cavar la trinchera?', o: ['Salmán al-Farisi', 'Umar', 'Abu Bakr', 'Uthmán'] },
       { q: '¿En qué año fue la batalla de la Trinchera?', o: ['627', '625', '630', '622'] },
-      { q: '¿Quiénes cavaron la trinchera?', o: ['Todos juntos, incluido el Profeta', 'Solo los esclavos', 'Solo los Ansar', 'Trabajadores contratados'] },
-      { q: '¿Cómo terminó el asedio?', o: ['Un viento fuerte dispersó al enemigo', 'Con una gran batalla campal', 'Con un tratado de paz', 'Medina se rindió'] },
+      { q: 'En la batalla de la Trinchera, ¿quiénes cavaron la trinchera?', o: ['Todos juntos, incluido el Profeta', 'Solo los esclavos', 'Solo los Ansar', 'Trabajadores contratados'] },
+      { q: '¿Cómo terminó el asedio de la Trinchera?', o: ['Un viento fuerte dispersó al enemigo', 'Con una gran batalla campal', 'Con un tratado de paz', 'Medina se rindió'] },
     ],
   },
   {
@@ -188,8 +188,8 @@ export const LESSONS = [
     q: [
       { q: '¿Cuál era el objetivo del viaje a Hudaybiya?', o: ['Hacer la umra', 'Luchar', 'Comerciar', 'Emigrar'] },
       { q: '¿Cuántos años de paz establecía el Tratado de Hudaybiya?', o: ['10', '1', '5', '50'] },
-      { q: '¿Qué sura se reveló después del tratado?', o: ['Al-Fath', 'An-Nasr', 'Al-Káfirún', 'Al-Máida'] },
-      { q: '¿Cómo se llama el juramento de lealtad hecho bajo el árbol?', o: ['El Juramento de Ridwán', 'El Juramento de Aqaba', 'El Juramento de Despedida', 'El Hilf al-Fudul'] },
+      { q: '¿Qué sura se reveló después del Tratado de Hudaybiya?', o: ['Al-Fath', 'An-Nasr', 'Al-Káfirún', 'Al-Máida'] },
+      { q: '¿Cómo se llama el juramento de lealtad hecho bajo el árbol en Hudaybiya?', o: ['El Juramento de Ridwán', 'El Juramento de Aqaba', 'El Juramento de Despedida', 'El Hilf al-Fudul'] },
     ],
   },
   {
@@ -222,7 +222,7 @@ export const LESSONS = [
       { q: '¿A qué edad falleció el Profeta?', o: ['63', '40', '53', '70'] },
       { q: '¿En qué ciudad falleció el Profeta?', o: ['Medina', 'La Meca', 'Táif', 'Jerusalén'] },
       { q: '¿Quién fue el primer califa?', o: ['Abu Bakr', 'Umar', 'Uthmán', 'Ali'] },
-      { q: 'Tras la noticia del fallecimiento, ¿de qué sura recitó Abu Bakr una aleya?', o: ['Al Imrán', 'Yasín', 'Al-Mulk', 'Ar-Rahmán'] },
+      { q: 'Tras la noticia del fallecimiento del Profeta, ¿de qué sura recitó Abu Bakr una aleya?', o: ['Al Imrán', 'Yasín', 'Al-Mulk', 'Ar-Rahmán'] },
     ],
   },
 ];
@@ -233,7 +233,7 @@ export const BADGES = [
   { id: 'seri3', icon: '🔥', name: 'Racha de 3 días', desc: 'Haz una lección 3 días seguidos' },
   { id: 'seri7', icon: '⭐', name: 'Racha de 7 días', desc: 'Haz una lección 7 días seguidos' },
   { id: 'seri30', icon: '🌟', name: 'Racha de 30 días', desc: 'Haz una lección 30 días seguidos' },
-  { id: 'mekke', icon: '🕋', name: 'Los años de La Meca', desc: 'Termina las 11 primeras lecciones' },
+  { id: 'mekke', icon: '🕋', name: 'Los años de La Meca', desc: 'Termina todas las lecciones de los años de La Meca' },
   { id: 'hicret', icon: '🌄', name: 'Muhayir', desc: 'Termina la lección de la Hégira' },
   { id: 'medine', icon: '🕌', name: 'Los años de Medina', desc: 'Termina todas las lecciones' },
   { id: 'yaris', icon: '⚡', name: 'Primera competencia', desc: 'Completa una competencia' },

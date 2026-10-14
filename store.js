@@ -9,6 +9,10 @@ const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(s)); } ca
 
 export const state = () => s;
 export const set = (patch) => { Object.assign(s, patch); persist(); };
+/** Son görülen soru kimlikleri (tekrarı azaltmak için). */
+export const recentQ = () => new Set(s.seenQ || []);
+export const markSeen = (ids) => { s.seenQ = [...(s.seenQ || []).filter((x) => !ids.includes(x)), ...ids].slice(-80); persist(); };
+
 export const reset = () => { const keep = { mode: s.mode, sound: s.sound }; s = { ...blank(), ...keep }; persist(); };
 
 export const today = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -25,7 +29,10 @@ export function streak() {
 export const doneToday = () => s.days.includes(today());
 
 export const isDone = (n) => Boolean(s.done[n]);
-export const unlocked = (n) => n === 1 || isDone(n - 1);
+export const unlocked = (n) => {
+  const i = LESSONS.findIndex((l) => l.n === n);
+  return i <= 0 || isDone(n) || isDone(LESSONS[i - 1].n);
+};
 export const nextLesson = () => LESSONS.find((l) => !isDone(l.n)) || null;
 export const doneCount = () => LESSONS.filter((l) => isDone(l.n)).length;
 
@@ -41,7 +48,7 @@ function award() {
   if (st >= 3) want.push('seri3');
   if (st >= 7) want.push('seri7');
   if (st >= 30) want.push('seri30');
-  if (LESSONS.slice(0, 11).every((l) => isDone(l.n))) want.push('mekke');
+  if (LESSONS.filter((l) => l.era === 'mekke').every((l) => isDone(l.n))) want.push('mekke');
   if (isDone(12)) want.push('hicret');
   if (LESSONS.every((l) => isDone(l.n))) want.push('medine');
   if (s.duels.played >= 1) want.push('yaris');

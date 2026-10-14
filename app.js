@@ -3,13 +3,14 @@ import * as store from './store.js';
 import { say, stop, chime } from './audio.js';
 import { h, toast, confetti, wait } from './ui.js';
 import { online, rpc, forgetSession } from './net.js';
-import { onlineMatch, botMatch, N_Q } from './duel.js';
+import { onlineMatch, botMatch, raceMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
-import { t, LANG, setLang, serverMsg } from './i18n.js';
+import { t, LANG, setLang, serverMsg, langChosen } from './i18n.js';
 import { HADIS } from './hadis.js';
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
+import { lessonMap } from './map.js';
 
-export const VERSION = '1.4.0';
+export const VERSION = '1.5.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -35,6 +36,16 @@ const tabs = (cur) => h('nav', { class: 'tabs' },
 
 /* ───────── İlk açılış ───────── */
 function onboarding() {
+  if (!langChosen) {
+    show(h('main', { class: 'screen center onboard' },
+      h('div', { class: 'seal', 'aria-hidden': 'true' }, '۞'),
+      h('h1', { class: 'display' }, 'Siyer Yolu'),
+      h('p', { class: 'lead' }, 'Dil seçin · Elige tu idioma'),
+      h('button', { class: 'btn', onclick: () => setLang('tr') }, '🇹🇷 Türkçe'),
+      h('button', { class: 'btn', onclick: () => setLang('es') }, '🌎 Español'),
+      h('p', { class: 'tiny muted' }, 'Ayarlar\'dan sonra değiştirebilirsiniz · Puedes cambiarlo luego en Ajustes')));
+    return;
+  }
   show(h('main', { class: 'screen center onboard' },
     h('div', { class: 'seal', 'aria-hidden': 'true' }, '۞'),
     h('h1', { class: 'display' }, 'Siyer Yolu'),
@@ -74,7 +85,7 @@ function lessonsTab() {
       h('li', {},
         h('button', { class: `step${done ? ' done' : ''}${open ? '' : ' locked'}`, disabled: !open, onclick: () => lesson(l) },
           h('span', { class: 'step-icon', 'aria-hidden': 'true' }, open ? l.icon : '🔒'),
-          h('span', { class: 'step-text' }, h('b', {}, `${l.n}. ${l.title}`), h('small', {}, l.year)),
+          h('span', { class: 'step-text' }, h('b', {}, `${i + 1}. ${l.title}`), h('small', {}, l.year)),
           h('span', { class: 'stars', 'aria-label': done ? t('nCorrect', store.state().done[l.n].best) : null }, done ? '★'.repeat(store.state().done[l.n].best) + '☆'.repeat(3 - store.state().done[l.n].best) : ''))),
     ];
   }));
@@ -88,7 +99,7 @@ function lesson(l) {
     if (window.speechSynthesis?.speaking) { stop(); listen.textContent = t('listen'); return; }
     listen.textContent = t('stopListen'); await say(`${l.title}. ${text}`); listen.textContent = t('listen');
   } }, t('listen'));
-  show(topbar(`${l.n}/${LESSONS.length}`, () => home()),
+  show(topbar(`${LESSONS.indexOf(l) + 1}/${LESSONS.length}`, () => home()),
     h('main', { class: 'screen' },
       h('article', { class: 'card lesson' },
         h('div', { class: 'lesson-icon', 'aria-hidden': 'true' }, l.icon),
@@ -96,12 +107,15 @@ function lesson(l) {
         h('h1', {}, l.title),
         h('p', { class: 'lesson-text' }, text),
         listen),
+      (() => { const m = lessonMap(l.n); return m ? h('figure', { class: 'card map-card' }, h('p', { class: 'eyebrow' }, t('mapTitle')), m, h('figcaption', { class: 'tiny muted' }, t('mapNote'))) : null; })(),
       h('button', { class: 'btn', onclick: () => quiz(l) }, t('toQuiz'))));
   if (kid()) setTimeout(() => listen.click(), 400);
 }
 
 function quiz(l) {
-  const qs = shuffle(l.q).slice(0, 3);
+  const seen = store.recentQ();
+  const qs = shuffle(l.q.map((x, k) => ({ ...x, id: l.n * 10 + k + 1 }))).sort((a, b) => seen.has(a.id) - seen.has(b.id)).slice(0, 3);
+  store.markSeen(qs.map((x) => x.id));
   let i = 0; let correct = 0;
   const step = () => {
     if (i >= qs.length) return lessonDone(l, correct);
@@ -168,11 +182,14 @@ function raceTab() {
       h('p', { class: 'small muted center' }, t('kidRaceNote'))];
   }
   const meBox = h('div', { class: 'me-box' });
+  const badge = h('span', { class: 'count', hidden: true });
+  const friendsBtn = h('button', { class: 'btn ghost', onclick: () => (s.nickname ? friendsScreen() : nickname(friendsScreen)) }, t('friends'), badge);
+  if (online && s.nickname) rpc('friends').then((f) => { const n = f.incoming.length + f.invites.length; if (n) { badge.textContent = n; badge.hidden = false; } }).catch(() => {});
   const board = h('ol', { class: 'board' }, h('li', { class: 'muted small' }, online ? t('boardLoading') : t('boardSoon')));
   if (online && s.nickname) {
     rpc('me').then((m) => {
       if (!m) return;
-      meBox.replaceChildren(h('b', {}, m.nickname), h('span', {}, t('points', m.rating)), h('span', {}, t('wins', m.wins)), m.games ? h('span', {}, `#${m.rank}`) : null);
+      meBox.replaceChildren(...[h('b', {}, m.nickname), h('span', {}, t('points', m.rating)), h('span', {}, t('wins', m.wins)), m.games ? h('span', {}, `#${m.rank}`) : null].filter(Boolean));
     }).catch(() => {});
     rpc('leaderboard').then((rows) => {
       board.replaceChildren(...(rows.length ? rows.map((r, i) => h('li', { class: r.me ? 'me' : '' }, h('span', { class: 'rank' }, i + 1), h('span', { class: 'nick' }, r.nickname), h('span', { class: 'pts' }, r.rating))) : [h('li', { class: 'muted small' }, t('boardEmpty'))]));
@@ -182,6 +199,11 @@ function raceTab() {
     online && s.nickname ? meBox : null,
     online ? h('button', { class: 'btn', onclick: () => (s.nickname ? search() : nickname(search)) }, t('findLive'))
       : h('p', { class: 'note' }, t('liveSoon')),
+    online ? h('button', { class: 'btn', onclick: () => (s.nickname ? quickRoom() : nickname(quickRoom)) }, t('groupRace')) : null,
+    online ? h('div', { class: 'two' },
+      h('button', { class: 'btn ghost', onclick: () => (s.nickname ? createRoom() : nickname(createRoom)) }, t('roomCreate')),
+      h('button', { class: 'btn ghost', onclick: () => (s.nickname ? joinRoom() : nickname(joinRoom)) }, t('roomJoin'))) : null,
+    online ? friendsBtn : null,
     h('button', { class: 'btn ghost', onclick: () => duel(botMatch({ nickname: s.nickname || t('you'), kid: false })) }, t('botTrain')),
     h('h3', { class: 'sec' }, t('boardTitle')), board];
 }
@@ -229,7 +251,7 @@ function search() {
 }
 
 function duel(match) {
-  let st = null; let offset = 0; let alive = true; let curQ = -1; let finishing = false;
+  let st = null; let offset = 0; let alive = true; let curQ = -1; let finishing = false; let fastPoll = false; let wake = null;
   const myAns = new Map(); // qi → {choice, correct, points}
   let opts = [];
   const meName = h('b', {}); const oppName = h('b', {});
@@ -239,13 +261,22 @@ function duel(match) {
   const bar = h('span'); const barBox = h('div', { class: 'timer', 'aria-hidden': 'true' }, bar);
   const qBox = h('div', { class: 'duel-q' });
   const note = h('p', { class: 'feedback center', role: 'status' });
-  show(h('header', { class: 'top' }, h('button', { class: 'icon', 'aria-label': t('exit'), onclick: () => { if (confirm(t('exitConfirm'))) home('yaris'); } }, '✕'), h('span', { class: 'top-title' }, match.kind === 'bot' ? t('training') : t('liveRace')), h('span')),
+  const group = match.kind === 'group';
+  const multi = h('ol', { class: 'multi' });
+  show(h('header', { class: 'top' }, h('button', { class: 'icon', 'aria-label': t('exit'), onclick: () => { if (confirm(t('exitConfirm'))) home('yaris'); } }, '✕'), h('span', { class: 'top-title' }, match.kind === 'bot' ? t('training') : group ? t('groupRace') : t('liveRace')), h('span')),
     h('main', { class: 'screen duel' },
-      h('div', { class: 'scoreboard' },
+      group ? multi : h('div', { class: 'scoreboard' },
         h('div', { class: 'side me' }, meName, meScore),
         h('span', { class: 'vs' }, 'VS'),
         h('div', { class: 'side opp' }, h('span', { class: 'opp-name' }, oppName, oppDot), oppScore)),
       phase, barBox, qBox, note));
+  const paintMulti = (qi) => {
+    const rows = st.players.map((p) => ({ p, score: p.me ? sum([...myAns.values()]) : sum(p.answers.filter((x) => x.points != null)) }))
+      .sort((a, b) => b.score - a.score);
+    multi.replaceChildren(...rows.map(({ p, score }) => h('li', { class: p.me ? 'me' : '' },
+      h('span', { class: `dot${p.answers.some((x) => x.qi === qi) || (p.me && myAns.has(qi)) ? ' on' : ''}` }),
+      h('b', {}, p.nickname), h('span', { class: 'score' }, score))));
+  };
 
   const now = () => Date.now() + offset;
   const sum = (arr) => arr.reduce((a, x) => a + (x.points || 0), 0);
@@ -260,12 +291,14 @@ function duel(match) {
         st = s;
         for (const m of s.mine || []) myAns.set(m.qi, m);
       } catch { phase.textContent = t('slow'); }
-      await wait(match.kind === 'bot' ? 250 : 1000);
+      const ms = match.kind === 'bot' ? 200 : fastPoll ? 350 : 800; fastPoll = false;
+      await new Promise((r) => { wake = r; setTimeout(r, ms); });
     }
   }
 
   function renderQuestion(qi) {
     const q = byId(st.qids[qi]);
+    store.markSeen([q.id]);
     opts = shuffle(q.o.map((t, k) => ({ t, k })));
     note.textContent = '';
     const buttons = opts.map((o, idx) => h('button', { class: 'opt', onclick: async () => {
@@ -277,6 +310,7 @@ function duel(match) {
         const r = await match.submit(qi, o.k);
         if (!r.accepted) { note.textContent = t('timeUp'); myAns.set(qi, { choice: o.k, correct: false, points: 0 }); return; }
         myAns.set(qi, { choice: o.k, correct: r.correct, points: r.points });
+        fastPoll = true; wake?.();
         chime(r.correct ? 'ok' : 'no');
         note.textContent = r.correct ? t('rightPts', r.points) : t('wrong');
         buttons[idx].classList.add(r.correct ? 'right' : 'wrong');
@@ -293,7 +327,13 @@ function duel(match) {
     buttons[right]?.classList.add('right');
     const th = (st.theirs || []).find((x) => x.qi === qi);
     const mine = myAns.get(qi);
-    note.textContent = `${mine ? (mine.correct ? t('youPts', mine.points) : t('youX')) : t('youNone')} · ${th ? (th.correct ? t('oppPts', th.points) : t('oppX')) : t('oppNone')}`;
+    if (group) {
+      const others = st.others.map((p) => p.answers.find((x) => x.qi === qi)).filter((x) => x && x.correct != null);
+      if (st.others.some((p) => p.answers.find((x) => x.qi === qi && x.correct == null))) fastPoll = true;
+      note.textContent = `${mine ? (mine.correct ? t('youPts', mine.points) : t('youX')) : t('youNone')} · ${t('othersRight', others.filter((x) => x.correct).length, st.others.length)}`;
+      return;
+    }
+    note.textContent = `${mine ? (mine.pending ? t('youPending') : mine.correct ? t('youPts', mine.points) : t('youX')) : t('youNone')} · ${th ? (th.correct == null ? t('oppPending') : th.correct ? t('oppPts', th.points) : t('oppX')) : t('oppNone')}`;
   }
 
   async function end() {
@@ -301,7 +341,7 @@ function duel(match) {
     let s = st;
     for (let i = 0; i < 4; i++) { try { s = await match.finish(); break; } catch { await wait(800); } }
     alive = false;
-    duelResult(match, s);
+    if (group) groupResult(s); else duelResult(match, s);
   }
 
   function tick() {
@@ -311,28 +351,36 @@ function duel(match) {
       oppName.textContent = st.opp?.nickname || t('opp');
       meScore.textContent = sum([...myAns.values()]);
       oppScore.textContent = sum((st.theirs || []).filter((x) => x.points != null));
-      const start = new Date(st.starts_at).getTime();
-      const el = now() - start;
-      if (el < 0) {
-        phase.textContent = t('startsIn', Math.ceil(-el / 1000)); bar.style.width = '100%';
-        if (curQ !== -2) { curQ = -2; qBox.replaceChildren(h('div', { class: 'ready' }, h('p', { class: 'big-emoji' }, '⏳'), h('p', {}, t('matchedWith', st.opp?.nickname || t('opp'))), st.opp?.bot ? h('p', { class: 'small muted' }, t('isBot')) : null)); }
-      } else if (el >= st.slot_ms * N_Q) {
+      const T = (x) => new Date(x).getTime();
+      // Eski sunucu sürümü zaman dizisi göndermezse sabit çizelgeye düş
+      const base = T(st.starts_at);
+      const opens = st.opens ? st.opens.map(T) : [0, 1, 2, 3, 4].map((k) => base + k * st.slot_ms);
+      const closes = st.closes ? st.closes.map(T) : opens.map((o) => o + st.open_ms);
+      const endAt = st.ends_at ? T(st.ends_at) : base + N_Q * st.slot_ms;
+      const n = now();
+      let qi = -1; for (let k = 0; k < opens.length; k++) if (n >= opens[k]) qi = k;
+      if (group) paintMulti(Math.max(qi, 0));
+      if (qi < 0) {
+        phase.textContent = t('startsIn', Math.ceil((opens[0] - n) / 1000)); bar.style.width = '100%';
+        if (curQ !== -2) { curQ = -2; qBox.replaceChildren(h('div', { class: 'ready' }, h('p', { class: 'big-emoji' }, '⏳'), h('p', {}, t('matchedWith', group ? st.others.map((p) => p.nickname).join(', ') : st.opp?.nickname || t('opp'))), st.opp?.bot ? h('p', { class: 'small muted' }, t('isBot')) : null)); }
+      } else if (n >= endAt) {
         phase.textContent = t('done'); end(); return;
       } else {
-        const qi = Math.floor(el / st.slot_ms);
-        const inQ = el - qi * st.slot_ms;
         if (qi !== curQ) { curQ = qi; renderQuestion(qi); qBox.revealed = false; }
-        const open = inQ < st.open_ms;
+        // Kapanış sonrası alınmış bir durum gelmeden sonuç gösterilmez (rakibin sonucu eksik görünmesin)
+        const stale = T(st.now) < closes[qi];
+        if (n >= closes[qi] && stale) fastPoll = true;
+        const open = n < closes[qi] || stale;
         oppDot.classList.toggle('on', Boolean((st.theirs || []).find((x) => x.qi === qi)));
         if (open) {
-          const left = st.open_ms - inQ;
+          const left = opens[qi] + st.open_ms - n;
           phase.textContent = t('sec', Math.ceil(left / 1000));
           bar.style.width = `${(left / st.open_ms) * 100}%`;
           bar.classList.toggle('low', left < 4000);
         } else {
           phase.textContent = qi < N_Q - 1 ? t('nextComing') : t('results');
           bar.style.width = '0%';
-          if (!qBox.revealed) { qBox.revealed = true; reveal(qi); }
+          if (!qBox.revealed) { qBox.revealed = true; reveal(qi); fastPoll = true; }
           else reveal(qi); // rakip sonucu geç gelirse güncelle
         }
       }
@@ -362,6 +410,156 @@ function duelResult(match, s) {
     fresh.length ? h('div', { class: 'new-badges' }, fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return h('span', { class: 'badge on' }, h('b', {}, b.icon), b.name); })) : null,
     h('button', { class: 'btn', onclick: again }, match.kind === 'bot' ? t('playAgain') : t('newOpp')),
     h('button', { class: 'btn ghost', onclick: () => shareCard({ kind: 'yaris', me: s.me?.nickname || t('me'), opp: s.opp?.nickname || t('opp'), mine, theirs, res }) }, t('shareResult')),
+    h('button', { class: 'link', onclick: () => home('yaris') }, t('racePage'))));
+}
+
+/* ───────── Arkadaşlar ───────── */
+function friendsScreen() {
+  let alive = true;
+  const input = h('input', { class: 'input', maxlength: 16, autocomplete: 'off', placeholder: t('friendPh') });
+  const err = h('p', { class: 'err', role: 'alert' });
+  const box = h('div', { class: 'stack' }, h('p', { class: 'muted small center' }, t('boardLoading')));
+  const act = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); load(); } catch (e) { toast(serverMsg(e.message)); } };
+  const load = async () => {
+    let f;
+    try { f = await rpc('friends'); } catch (e) { box.replaceChildren(h('p', { class: 'err' }, serverMsg(e.message))); return; }
+    if (!alive) return;
+    const list = (title, items) => (items.length ? [h('h3', { class: 'sec' }, title), h('ul', { class: 'board' }, items)] : []);
+    box.replaceChildren(
+      ...list(t('invites'), f.invites.map((x) => h('li', {}, h('span', { class: 'nick' }, t('inviteFrom', x.from)),
+        h('button', { class: 'btn small', onclick: () => { alive = false; enterRoom(() => rpc('room_join', { p_code: x.code })); } }, t('joinBtn'))))),
+      ...list(t('incoming'), f.incoming.map((n) => h('li', {}, h('span', { class: 'nick' }, n),
+        h('button', { class: 'btn small', onclick: () => act(() => rpc('friend_respond', { p_nick: n, p_accept: true }), t('friendAdded')) }, t('accept')),
+        h('button', { class: 'icon', 'aria-label': t('decline'), onclick: () => act(() => rpc('friend_respond', { p_nick: n, p_accept: false })) }, '✕')))),
+      ...list(t('myFriends'), f.friends.map((x) => h('li', {}, h('span', { class: `dot${x.online ? ' on' : ''}`, title: x.online ? t('onlineNow') : '' }),
+        h('span', { class: 'nick' }, x.nickname), h('span', { class: 'pts' }, x.rating),
+        h('button', { class: 'icon', 'aria-label': t('removeFriend', x.nickname), onclick: () => { if (confirm(t('removeFriend', x.nickname))) act(() => rpc('friend_remove', { p_nick: x.nickname })); } }, '✕')))),
+      ...list(t('outgoing'), f.outgoing.map((n) => h('li', {}, h('span', { class: 'nick muted' }, n), h('small', { class: 'muted' }, t('pending')),
+        h('button', { class: 'icon', 'aria-label': t('cancel'), onclick: () => act(() => rpc('friend_remove', { p_nick: n })) }, '✕')))),
+      ...(f.friends.length || f.incoming.length || f.outgoing.length || f.invites.length ? [] : [h('p', { class: 'muted small center' }, t('noFriends'))]));
+  };
+  show(topbar(t('friends'), () => home('yaris')), h('main', { class: 'screen' },
+    h('form', { class: 'card stack', onsubmit: async (e) => {
+      e.preventDefault(); err.textContent = '';
+      try { const r = await rpc('friend_request', { p_nick: input.value }); input.value = ''; toast(r === 'accepted' ? t('friendAdded') : t('requestSent')); load(); }
+      catch (x) { err.textContent = serverMsg(x.message); }
+    } },
+      h('h2', {}, t('addFriend')), h('p', { class: 'muted small' }, t('addFriendNote', store.state().nickname)),
+      input, err, h('button', { class: 'btn' }, t('sendRequest'))),
+    box));
+  cleanup = () => { alive = false; };
+  load();
+  (async () => { while (alive) { await wait(6000); if (alive) load(); } })();
+}
+
+/* ───────── Odalar (3-4 kişi) ───────── */
+const createRoom = () => enterRoom(() => rpc('room_create'));
+const quickRoom = () => enterRoom(() => rpc('quick_room'));
+
+function joinRoom() {
+  const input = h('input', { class: 'input code', inputmode: 'numeric', maxlength: 4, autocomplete: 'off', placeholder: '0000', 'aria-label': t('roomCode') });
+  const err = h('p', { class: 'err', role: 'alert' });
+  show(topbar(t('roomJoin'), () => home('yaris')), h('main', { class: 'screen' },
+    h('form', { class: 'card stack', onsubmit: async (e) => {
+      e.preventDefault(); err.textContent = '';
+      try { const r = await rpc('room_join', { p_code: input.value }); lobby(r); } catch (x) { err.textContent = serverMsg(x.message); }
+    } }, h('h2', {}, t('roomCodeQ')), input, err, h('button', { class: 'btn' }, t('joinBtn')))));
+  input.focus();
+}
+
+async function enterRoom(open) {
+  try { lobby(await open()); } catch (e) { toast(serverMsg(e.message)); home('yaris'); }
+}
+
+function lobby(room) {
+  let alive = true; const t0 = Date.now(); let friends = null;
+  const leave = () => { alive = false; rpc('room_leave', { p_room: room.room_id }).catch(() => {}); };
+  const slots = h('ul', { class: 'slots' });
+  const status = h('p', { class: 'muted center' });
+  const startBtn = h('button', { class: 'btn', hidden: true, onclick: async () => {
+    startBtn.disabled = true;
+    try { paint(await rpc('room_start', { p_room: room.room_id })); } catch (e) { toast(serverMsg(e.message)); startBtn.disabled = false; }
+  } }, t('startRace'));
+  const inviteBox = h('div', { class: 'stack' });
+  const botBtn = h('button', { class: 'btn ghost', hidden: true, onclick: () => { leave(); duel(botMatch({ nickname: store.state().nickname, kid: false })); } }, t('playBot'));
+  const code = room.public ? null : h('div', { class: 'room-code' },
+    h('p', { class: 'eyebrow' }, t('roomCode')), h('b', {}, room.code),
+    h('button', { class: 'btn small ghost', onclick: () => shareCode(room.code) }, t('shareCode')));
+  show(topbar(room.public ? t('groupRace') : t('privateRoom'), () => { leave(); home('yaris'); }),
+    h('main', { class: 'screen' }, ...[code].filter(Boolean), h('h3', { class: 'sec' }, t('players')), slots, status, startBtn, inviteBox, botBtn));
+  cleanup = () => { if (alive) leave(); };
+
+  function paint(r) {
+    room = r;
+    if (r.race_id) { alive = false; chime('ok'); duel(raceMatch(r.race_id)); return; }
+    slots.replaceChildren(...[0, 1, 2, 3].map((i) => {
+      const p = r.players[i];
+      return h('li', { class: p ? (p.me ? 'me' : '') : 'empty' }, p ? [h('b', {}, p.nickname), p.nickname === r.host && !r.public ? h('small', {}, ' 👑') : null, h('span', { class: 'pts' }, p.rating)] : t('emptySlot'));
+    }));
+    const n = r.players.length;
+    if (r.public) {
+      status.textContent = n >= 3 ? t('startingSoon') : t('waitingPlayers', n);
+      botBtn.hidden = !(n < 2 && Date.now() - t0 > 30000);
+    } else {
+      startBtn.hidden = !r.is_host;
+      startBtn.disabled = n < 2;
+      status.textContent = r.is_host ? (n < 2 ? t('needTwo') : t('canStart', n)) : t('hostStarts', r.host);
+    }
+  }
+
+  async function paintFriends() {
+    if (room.public) return;
+    try { friends = (await rpc('friends')).friends; } catch { return; }
+    if (!alive) return;
+    const inRoom = new Set(room.players.map((p) => p.nickname));
+    const list = friends.filter((f) => !inRoom.has(f.nickname));
+    inviteBox.replaceChildren(...(list.length ? [h('h3', { class: 'sec' }, t('inviteFriends')),
+      h('ul', { class: 'board' }, list.map((f) => h('li', {}, h('span', { class: `dot${f.online ? ' on' : ''}` }), h('span', { class: 'nick' }, f.nickname),
+        h('button', { class: 'btn small ghost', onclick: async (e) => {
+          e.target.disabled = true;
+          try { await rpc('room_invite', { p_room: room.room_id, p_nick: f.nickname }); e.target.textContent = t('invited'); } catch (x) { toast(serverMsg(x.message)); e.target.disabled = false; }
+        } }, t('invite')))))] : []));
+  }
+
+  paint(room); paintFriends();
+  (async () => {
+    let k = 0;
+    while (alive) {
+      await wait(1500);
+      if (!alive) return;
+      try { paint(await rpc('room_state', { p_room: room.room_id })); }
+      catch (e) { if (alive) { alive = false; toast(serverMsg(e.message)); home('yaris'); } return; }
+      if (++k % 8 === 0) paintFriends();
+    }
+  })();
+}
+
+async function shareCode(code) {
+  const text = t('shareCodeText', code);
+  try {
+    if (navigator.share) await navigator.share({ text, url: 'https://play.google.com/store/apps/details?id=com.saadetevreni.siyeryolu' });
+    else { await navigator.clipboard.writeText(text); toast(t('copied')); }
+  } catch { /* vazgeçildi */ }
+}
+
+function groupResult(s) {
+  const rows = s.players.map((p) => ({ ...p, score: p.answers.reduce((a, x) => a + (x.points || 0), 0) })).sort((a, b) => b.score - a.score);
+  const top = rows[0].score;
+  const me = rows.find((p) => p.me);
+  const place = rows.filter((p) => p.score > me.score).length + 1;
+  const won = me.score === top && rows.filter((p) => p.score === top).length === 1;
+  const { fresh } = store.finishDuel(won);
+  if (won) { chime('win'); confetti(); }
+  show(topbar(null, () => home('yaris')), h('main', { class: 'screen center' },
+    h('div', { class: 'big-emoji', 'aria-hidden': 'true' }, ['🏆', '🥈', '🥉', '🌱'][place - 1]),
+    h('h1', {}, t('place', place)),
+    h('ol', { class: 'board podium' }, rows.map((p, i) => h('li', { class: p.me ? 'me' : '' },
+      h('span', { class: 'rank' }, i + 1), h('span', { class: 'nick' }, p.nickname), h('span', { class: 'pts' }, p.score),
+      p.delta != null && s.ranked ? h('small', { class: 'muted' }, `${p.delta >= 0 ? '+' : ''}${p.delta}`) : null))),
+    s.ranked && s.my_delta != null ? h('p', { class: `pill ${s.my_delta >= 0 ? 'gold' : ''}` }, t('ratingDelta', s.my_delta)) : null,
+    !s.ranked ? h('p', { class: 'muted small' }, t('friendlyNote')) : null,
+    fresh.length ? h('div', { class: 'new-badges' }, fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return h('span', { class: 'badge on' }, h('b', {}, b.icon), b.name); })) : null,
+    h('button', { class: 'btn', onclick: () => (s.ranked ? quickRoom() : createRoom()) }, s.ranked ? t('newGroup') : t('newRoom')),
     h('button', { class: 'link', onclick: () => home('yaris') }, t('racePage'))));
 }
 

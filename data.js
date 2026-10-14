@@ -7,6 +7,8 @@
 
 import { LANG } from './i18n.js';
 import * as ES from './data-es.js';
+import * as TR2 from './data-tr-2.js';
+import * as ES2 from './data-es-2.js';
 
 const TR_ERAS = { mekke: 'Mekke yılları', hicret: 'Hicret', medine: 'Medine yılları' };
 
@@ -19,7 +21,7 @@ const TR_LESSONS = [
       { q: 'Peygamberimiz hangi yıl doğdu?', o: ['571', '610', '622', '632'] },
       { q: 'Doğduğu yıl hangi adla anılır?', o: ['Fil Yılı', 'Hüzün Yılı', 'Hicret Yılı', 'Veda Yılı'] },
       { q: 'Peygamberimizin annesinin adı nedir?', o: ['Hz. Âmine', 'Hz. Halime', 'Hz. Hatice', 'Hz. Fâtıma'] },
-      { q: 'Ona "Muhammed" adını kim verdi?', o: ['Dedesi Abdülmuttalib', 'Amcası Ebû Tâlib', 'Sütannesi Halime', 'Varaka b. Nevfel'] },
+      { q: 'Peygamberimize "Muhammed" adını kim verdi?', o: ['Dedesi Abdülmuttalib', 'Amcası Ebû Tâlib', 'Sütannesi Halime', 'Varaka b. Nevfel'] },
     ],
   },
   {
@@ -29,7 +31,7 @@ const TR_LESSONS = [
     q: [
       { q: 'Peygamberimizin sütannesi kimdir?', o: ['Hz. Halime', 'Hz. Âmine', 'Hz. Sümeyye', 'Hz. Âişe'] },
       { q: 'Annesi vefat ettiğinde Peygamberimiz kaç yaşındaydı?', o: ['6', '2', '12', '25'] },
-      { q: 'Dedesinin vefatından sonra onu kim himaye etti?', o: ['Amcası Ebû Tâlib', 'Amcası Hamza', 'Hz. Ebû Bekir', 'Zeyd b. Hârise'] },
+      { q: 'Dedesi Abdülmuttalib vefat edince Peygamberimizi kim himaye etti?', o: ['Amcası Ebû Tâlib', 'Amcası Hamza', 'Hz. Ebû Bekir', 'Zeyd b. Hârise'] },
       { q: 'Peygamberimiz gençliğinde hangi işi yaptı?', o: ['Çobanlık', 'Demircilik', 'Balıkçılık', 'Çiftçilik'] },
     ],
   },
@@ -40,7 +42,7 @@ const TR_LESSONS = [
     q: [
       { q: 'Mekkeliler Peygamberimize hangi lakabı verdi?', o: ['el-Emîn', 'es-Sıddîk', 'el-Fârûk', 'Seyfullah'] },
       { q: 'Hılfü\'l-Fudûl ne için kuruldu?', o: ['Haksızlığa uğrayana yardım etmek için', 'Ticaret kervanı düzenlemek için', 'Kâbe\'yi onarmak için', 'Şiir yarışması için'] },
-      { q: 'Hacerülesved anlaşmazlığını nasıl çözdü?', o: ['Hırkasını serip kabilelerin birlikte taşımasını sağladı', 'Kura çekti', 'En yaşlı reisi seçti', 'Taşı yerinde bıraktı'] },
+      { q: 'Peygamberimiz, Kâbe onarılırken çıkan Hacerülesved anlaşmazlığını nasıl çözdü?', o: ['Hırkasını serip kabilelerin birlikte taşımasını sağladı', 'Kura çekti', 'En yaşlı reisi seçti', 'Taşı yerinde bıraktı'] },
       { q: 'Kâbe onarılırken Peygamberimiz kaç yaşındaydı?', o: ['35', '25', '40', '53'] },
     ],
   },
@@ -73,7 +75,7 @@ const TR_LESSONS = [
     q: [
       { q: 'İlk iman eden kişi kimdir?', o: ['Hz. Hatice', 'Hz. Ebû Bekir', 'Hz. Ali', 'Hz. Ömer'] },
       { q: 'Çocuklardan ilk Müslüman olan kimdir?', o: ['Hz. Ali', 'Zeyd b. Hârise', 'Hz. Osman', 'Hz. Hamza'] },
-      { q: 'Müslümanların gizlice toplandığı ev kimindi?', o: ['Erkam\'ın', 'Ebû Tâlib\'in', 'Varaka\'nın', 'Ebû Cehil\'in'] },
+      { q: 'Mekke\'de ilk Müslümanların gizlice toplandığı ev kimindi?', o: ['Erkam\'ın', 'Ebû Tâlib\'in', 'Varaka\'nın', 'Ebû Cehil\'in'] },
       { q: 'Hz. Ebû Bekir\'in davetiyle Müslüman olanlardan biri kimdir?', o: ['Hz. Osman', 'Hz. Hamza', 'Hz. Ömer', 'Halid b. Velid'] },
     ],
   },
@@ -118,7 +120,7 @@ const TR_LESSONS = [
       { q: 'İsrâ yolculuğu hangi iki mescid arasındaydı?', o: ['Mescid-i Haram – Mescid-i Aksâ', 'Kuba – Mescid-i Nebevî', 'Mescid-i Haram – Kuba', 'Mescid-i Nebevî – Mescid-i Aksâ'] },
       { q: 'Mi\'râc\'da hangi ibadet farz kılındı?', o: ['Beş vakit namaz', 'Oruç', 'Zekât', 'Hac'] },
       { q: 'Hz. Ebû Bekir\'in "çok doğrulayan" anlamındaki lakabı nedir?', o: ['Sıddîk', 'Fârûk', 'Zinnûreyn', 'Emîn'] },
-      { q: 'Bu yolculuk hangi surenin ilk ayetinde anlatılır?', o: ['İsrâ', 'Necm', 'Kadr', 'Fil'] },
+      { q: 'İsrâ yolculuğu hangi surenin ilk ayetinde anlatılır?', o: ['İsrâ', 'Necm', 'Kadr', 'Fil'] },
     ],
   },
   {
@@ -150,7 +152,7 @@ const TR_LESSONS = [
     q: [
       { q: 'Mekke\'den Medine\'ye göç edenlere ne denir?', o: ['Muhacir', 'Ensar', 'Ehl-i Suffe', 'Tâbiîn'] },
       { q: 'Medineli Müslümanlara ne denir?', o: ['Ensar', 'Muhacir', 'Hanif', 'Mekkî'] },
-      { q: 'Abdurrahman b. Avf, kardeşinden ne istedi?', o: ['Çarşının yolunu göstermesini', 'Malının yarısını', 'Bir ev', 'Bir deve'] },
+      { q: 'Malının yarısını teklif eden Ensarî kardeşinden Abdurrahman b. Avf ne istedi?', o: ['Çarşının yolunu göstermesini', 'Malının yarısını', 'Bir ev', 'Bir deve'] },
       { q: 'Medine\'de inşa edilen mescidin adı nedir?', o: ['Mescid-i Nebevî', 'Mescid-i Aksâ', 'Kubbetü\'s-Sahra', 'Mescid-i Haram'] },
     ],
   },
@@ -161,7 +163,7 @@ const TR_LESSONS = [
     q: [
       { q: 'Bedir Savaşı hangi ayda oldu?', o: ['Ramazan', 'Muharrem', 'Zilhicce', 'Recep'] },
       { q: 'Bedir\'de Müslümanların sayısı yaklaşık kaçtı?', o: ['313', '1000', '3000', '70'] },
-      { q: 'Okuma yazma bilen esirler nasıl serbest kalabiliyordu?', o: ['On çocuğa okuma yazma öğreterek', 'Altın ödeyerek', 'Bir yıl çalışarak', 'Şiir okuyarak'] },
+      { q: 'Bedir\'de esir düşen ve okuma yazma bilen Mekkeliler nasıl serbest kalabiliyordu?', o: ['On çocuğa okuma yazma öğreterek', 'Altın ödeyerek', 'Bir yıl çalışarak', 'Şiir okuyarak'] },
       { q: 'Bedir Savaşı hangi yıl oldu?', o: ['624', '622', '627', '630'] },
     ],
   },
@@ -170,10 +172,10 @@ const TR_LESSONS = [
     text: 'Bedir\'in intikamını almak isteyen Mekkeliler ertesi yıl Uhud Dağı eteğine geldi. Peygamberimiz Abdullah b. Cübeyr komutasındaki elli okçuyu bir tepeye yerleştirdi ve "Ne olursa olsun yerinizden ayrılmayın" dedi. Savaşın başında Müslümanlar üstündü; ancak okçuların çoğu savaşın bittiğini sanıp tepeyi bıraktı. Bu boşluktan arkadan saldırılınca Müslümanlar ağır kayıp verdi; Peygamberimizin amcası Hz. Hamza şehit oldu. Uhud, emre itaatin ve sabrın önemini gösteren bir derstir.',
     kid: 'Uhud\'da Peygamberimiz okçulara "Tepeden ayrılmayın" dedi. Bazıları savaşın bittiğini sanıp ayrıldı ve Müslümanlar zor durumda kaldı. Peygamberimizin amcası Hz. Hamza şehit oldu. Bu olay sözü dinlemenin önemini öğretir.',
     q: [
-      { q: 'Peygamberimiz okçulara ne emretti?', o: ['Ne olursa olsun tepeden ayrılmamalarını', 'Hemen saldırmalarını', 'Geri çekilmelerini', 'Ganimet toplamalarını'] },
+      { q: 'Uhud\'da Peygamberimiz okçulara ne emretti?', o: ['Ne olursa olsun tepeden ayrılmamalarını', 'Hemen saldırmalarını', 'Geri çekilmelerini', 'Ganimet toplamalarını'] },
       { q: 'Uhud\'da şehit olan Peygamber amcası kimdir?', o: ['Hz. Hamza', 'Ebû Tâlib', 'Hz. Abbas', 'Ebû Leheb'] },
       { q: 'Uhud Savaşı hangi yıl oldu?', o: ['625', '624', '628', '632'] },
-      { q: 'Okçuların komutanı kimdi?', o: ['Abdullah b. Cübeyr', 'Halid b. Velid', 'Hz. Ali', 'Sa\'d b. Muâz'] },
+      { q: 'Uhud\'da okçuların komutanı kimdi?', o: ['Abdullah b. Cübeyr', 'Halid b. Velid', 'Hz. Ali', 'Sa\'d b. Muâz'] },
     ],
   },
   {
@@ -183,8 +185,8 @@ const TR_LESSONS = [
     q: [
       { q: 'Hendek kazma fikri kime aittir?', o: ['Selmân-ı Fârisî', 'Hz. Ömer', 'Hz. Ebû Bekir', 'Hz. Osman'] },
       { q: 'Hendek Savaşı hangi yıl oldu?', o: ['627', '625', '630', '622'] },
-      { q: 'Hendeği kimler kazdı?', o: ['Peygamberimiz dâhil herkes birlikte', 'Sadece köleler', 'Sadece Ensar', 'Kiralanan işçiler'] },
-      { q: 'Kuşatma nasıl sona erdi?', o: ['Şiddetli rüzgâr düşmanı dağıttı', 'Büyük bir meydan savaşıyla', 'Barış antlaşmasıyla', 'Medine teslim oldu'] },
+      { q: 'Hendek Savaşı\'nda hendeği kimler kazdı?', o: ['Peygamberimiz dâhil herkes birlikte', 'Sadece köleler', 'Sadece Ensar', 'Kiralanan işçiler'] },
+      { q: 'Hendek kuşatması nasıl sona erdi?', o: ['Şiddetli rüzgâr düşmanı dağıttı', 'Büyük bir meydan savaşıyla', 'Barış antlaşmasıyla', 'Medine teslim oldu'] },
     ],
   },
   {
@@ -194,8 +196,8 @@ const TR_LESSONS = [
     q: [
       { q: 'Hudeybiye yolculuğunun amacı neydi?', o: ['Umre yapmak', 'Savaşmak', 'Ticaret yapmak', 'Hicret etmek'] },
       { q: 'Hudeybiye Antlaşması kaç yıllık barış öngörüyordu?', o: ['10', '1', '5', '50'] },
-      { q: 'Antlaşmadan sonra hangi sure indi?', o: ['Fetih', 'Nasr', 'Kâfirûn', 'Mâide'] },
-      { q: 'Ağaç altında verilen bağlılık sözünün adı nedir?', o: ['Rıdvan Biatı', 'Akabe Biatı', 'Veda Biatı', 'Hılfü\'l-Fudûl'] },
+      { q: 'Hudeybiye Antlaşması\'ndan sonra hangi sure indi?', o: ['Fetih', 'Nasr', 'Kâfirûn', 'Mâide'] },
+      { q: 'Hudeybiye\'de ağaç altında verilen bağlılık sözünün adı nedir?', o: ['Rıdvan Biatı', 'Akabe Biatı', 'Veda Biatı', 'Hılfü\'l-Fudûl'] },
     ],
   },
   {
@@ -228,7 +230,7 @@ const TR_LESSONS = [
       { q: 'Peygamberimiz kaç yaşında vefat etti?', o: ['63', '40', '53', '70'] },
       { q: 'Peygamberimiz hangi şehirde vefat etti?', o: ['Medine', 'Mekke', 'Taif', 'Kudüs'] },
       { q: 'İlk halife kimdir?', o: ['Hz. Ebû Bekir', 'Hz. Ömer', 'Hz. Osman', 'Hz. Ali'] },
-      { q: 'Hz. Ebû Bekir vefat haberinden sonra hangi sureden ayet okudu?', o: ['Âl-i İmrân', 'Yâsîn', 'Mülk', 'Rahmân'] },
+      { q: 'Peygamberimizin vefat haberinden sonra Hz. Ebû Bekir hangi sureden ayet okudu?', o: ['Âl-i İmrân', 'Yâsîn', 'Mülk', 'Rahmân'] },
     ],
   },
 ];
@@ -239,7 +241,7 @@ const TR_BADGES = [
   { id: 'seri3', icon: '🔥', name: '3 gün seri', desc: '3 gün üst üste ders yap' },
   { id: 'seri7', icon: '⭐', name: '7 gün seri', desc: '7 gün üst üste ders yap' },
   { id: 'seri30', icon: '🌟', name: '30 gün seri', desc: '30 gün üst üste ders yap' },
-  { id: 'mekke', icon: '🕋', name: 'Mekke yılları', desc: 'İlk 11 dersi bitir' },
+  { id: 'mekke', icon: '🕋', name: 'Mekke yılları', desc: 'Mekke yıllarının bütün derslerini bitir' },
   { id: 'hicret', icon: '🌄', name: 'Muhacir', desc: 'Hicret dersini bitir' },
   { id: 'medine', icon: '🕌', name: 'Medine yılları', desc: 'Bütün dersleri bitir' },
   { id: 'yaris', icon: '⚡', name: 'İlk yarış', desc: 'Bir yarışı tamamla' },
@@ -257,7 +259,12 @@ const TR_SOURCES = [
 
 const es = LANG === 'es';
 export const ERAS = es ? ES.ERAS : TR_ERAS;
-export const LESSONS = es ? ES.LESSONS : TR_LESSONS;
+// Ek dersler ve ek sorular birleştirilir; yol kronolojik sıraya (ORDER) göre dizilir.
+const merge = (base, extra, extraQ) => {
+  const all = [...base.map((l) => ({ ...l, q: [...l.q, ...(extraQ[l.n] || [])] })), ...extra];
+  return TR2.ORDER.map((n) => all.find((l) => l.n === n)).filter(Boolean);
+};
+export const LESSONS = es ? merge(ES.LESSONS, ES2.EXTRA_LESSONS, ES2.EXTRA_Q) : merge(TR_LESSONS, TR2.EXTRA_LESSONS, TR2.EXTRA_Q);
 export const BADGES = es ? ES.BADGES : TR_BADGES;
 export const SOURCES = es ? ES.SOURCES : TR_SOURCES;
 

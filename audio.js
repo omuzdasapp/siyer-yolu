@@ -16,8 +16,25 @@ const expand = (t) => (LANG === 'es' ? t
   .replace(/\bb\. /g, 'bin ')
   .replace(/["“”]/g, ''));
 
-export const speaking = () => Boolean(window.speechSynthesis?.speaking);
-export const stop = () => window.speechSynthesis?.cancel();
+let clip = null; // seslendirilmiş ders dosyası (ses/<dil>/<ders>-<a|k>.mp3)
+export const speaking = () => Boolean(window.speechSynthesis?.speaking) || Boolean(clip && !clip.paused);
+export const stop = () => { window.speechSynthesis?.cancel(); if (clip) { clip.pause(); clip = null; } };
+
+/** Dersi okur: önce profesyonel seslendirme dosyası, yoksa cihazın konuşma motoru. */
+export function playLesson(l, kid, fallbackText) {
+  if (!state().sound) return Promise.resolve();
+  stop();
+  return new Promise((res) => {
+    const a = new Audio(`ses/${LANG}/${l.n}-${kid ? 'k' : 'a'}.mp3`);
+    clip = a;
+    let fell = false;
+    const fallback = () => { if (fell || clip !== a) return; fell = true; clip = null; say(fallbackText).then(res); };
+    a.onended = () => { if (clip === a) clip = null; res(); };
+    a.onerror = fallback;
+    a.onpause = () => { if (clip !== a) res(); };
+    a.play().catch(fallback);
+  });
+}
 
 export function say(text, rate = 0.95) {
   const s = window.speechSynthesis;

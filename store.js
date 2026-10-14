@@ -13,6 +13,10 @@ export const set = (patch) => { Object.assign(s, patch); persist(); };
 export const recentQ = () => new Set(s.seenQ || []);
 export const markSeen = (ids) => { s.seenQ = [...(s.seenQ || []).filter((x) => !ids.includes(x)), ...ids].slice(-80); persist(); };
 
+/** Okunan hikâyeler (sıra numarası). */
+export const storyRead = (i) => (s.stories || []).includes(i);
+export const markStory = (i) => { if (!storyRead(i)) { s.stories = [...(s.stories || []), i]; persist(); } };
+
 export const reset = () => { const keep = { mode: s.mode, sound: s.sound }; s = { ...blank(), ...keep }; persist(); };
 
 export const today = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

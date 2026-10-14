@@ -7,10 +7,11 @@ import { onlineMatch, botMatch, raceMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
 import { t, LANG, LANGS, LANG_FLAGS, setLang, serverMsg, langChosen } from './i18n.js';
 import { HADIS } from './hadis.js';
+import { HIKAYE, WHO, HIKAYE_SRC } from './hikaye-i18n.js';
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 import { lessonMap } from './map.js';
 
-export const VERSION = '1.6.0';
+export const VERSION = '1.7.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -75,20 +76,115 @@ function lessonsTab() {
     next ? h('button', { class: 'btn', onclick: () => lesson(next) }, store.doneToday() ? t('oneMore') : t('start5')) : null,
     st > 0 ? h('p', { class: 'small streak-note' }, t('streakNote', st, store.doneToday())) : null);
 
-  const path = h('ol', { class: 'path' }, LESSONS.flatMap((l, i) => {
-    const done = store.isDone(l.n);
-    const open = store.unlocked(l.n);
-    const eraStart = i === 0 || LESSONS[i - 1].era !== l.era;
-    return [
-      eraStart ? h('li', { class: 'era' }, ERAS[l.era]) : null,
-      h('li', {},
-        h('button', { class: `step${done ? ' done' : ''}${open ? '' : ' locked'}`, disabled: !open, onclick: () => lesson(l) },
-          h('span', { class: 'step-icon', 'aria-hidden': 'true' }, open ? l.icon : '🔒'),
-          h('span', { class: 'step-text' }, h('b', {}, `${i + 1}. ${l.title}`), h('small', {}, l.year)),
-          h('span', { class: 'stars', 'aria-label': done ? t('nCorrect', store.state().done[l.n].best) : null }, done ? '★'.repeat(store.state().done[l.n].best) + '☆'.repeat(3 - store.state().done[l.n].best) : ''))),
-    ];
+  const path = trail();
+  return [goal, storyCard(), h('h3', { class: 'sec' }, t('path')), path];
+}
+
+/* ───────── Günün hikâyesi ───────── */
+const storyOfDay = () => (HIKAYE ? Math.floor(Date.parse(store.today() + 'T00:00:00Z') / 86400000) % HIKAYE.length : -1);
+function storyCard() {
+  const i = storyOfDay(); if (i < 0) return null;
+  const x = HIKAYE[i]; const read = store.storyRead(i);
+  return h('button', { class: 'card story-card', onclick: () => story(i) },
+    h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
+    h('span', { class: 'story-meta' }, h('small', { class: 'eyebrow' }, t('storyEyebrow')), h('b', {}, x.t), h('small', { class: 'muted' }, WHO[x.w])),
+    h('span', { class: `story-check${read ? ' on' : ''}`, 'aria-label': read ? t('storyRead') : null }, read ? '✓' : ''));
+}
+function story(i, back = () => home()) {
+  const x = HIKAYE[i];
+  const listen = h('button', { class: 'btn ghost small', onclick: async () => {
+    if (speaking()) { stop(); listen.textContent = t('listen'); return; }
+    listen.textContent = t('stopListen'); await say(`${x.t}. ${x.x} ${x.h}`); listen.textContent = t('listen');
+  } }, t('listen'));
+  const doneBtn = h('button', { class: 'btn', onclick: () => { store.markStory(i); chime('ok'); back(); } }, `✓ ${t('storyRead')}`);
+  show(topbar(t('storiesTitle'), back),
+    h('main', { class: 'screen' },
+      h('article', { class: 'card lesson story' },
+        h('div', { class: 'lesson-icon', 'aria-hidden': 'true' }, x.i),
+        h('p', { class: 'eyebrow' }, WHO[x.w]),
+        h('h1', {}, x.t),
+        x.x.split('\n\n').map((p) => h('p', { class: 'lesson-text' }, p.replace(/"([^"]*)"/g, LANG === 'de' ? '„$1“' : LANG === 'ru' || LANG === 'es' ? '«$1»' : '“$1”'))),
+        h('aside', { class: 'hisse' }, h('small', { class: 'eyebrow' }, t('storyHisse')), h('p', {}, x.h)),
+        listen,
+        h('p', { class: 'tiny muted' }, HIKAYE_SRC)),
+      doneBtn,
+      h('button', { class: 'link', onclick: () => stories() }, t('storyAll'))));
+}
+function stories() {
+  show(topbar(t('storiesTitle'), () => home()),
+    h('main', { class: 'screen' },
+      h('ol', { class: 'story-list' }, HIKAYE.map((x, i) => h('li', {},
+        h('button', { class: 'story-row', onclick: () => story(i, () => stories()) },
+          h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
+          h('span', { class: 'story-meta' }, h('b', {}, x.t), h('small', { class: 'muted' }, WHO[x.w])),
+          h('span', { class: `story-check${store.storyRead(i) ? ' on' : ''}` }, store.storyRead(i) ? '✓' : '')))))));
+}
+
+/* ───────── Kervan yolu ───────── */
+let camelSeen = null; // devenin en son gösterildiği durak (ders bitince bir sonrakine yürür)
+const ERA_DECO = { mekke: ['⛰️', '🐐', '🌙', '🏜️'], hicret: ['🌵', '⭐', '🏜️', '🦎'], medine: ['🌴', '🏡', '🌴', '💧'] };
+const ERA_ICON = { mekke: '🕋', hicret: '🐪', medine: '🌴' };
+function trail() {
+  const ROW = 124, HEAD = 64;
+  const cur = LESSONS.findIndex((l) => store.unlocked(l.n) && !store.isDone(l.n));
+  const curI = cur < 0 ? LESSONS.length - 1 : cur;
+  const xOf = (i) => 50 + Math.sin(i * 0.9) * 28;
+  const bx = (k) => (k <= 0 ? xOf(0) : k >= LESSONS.length ? xOf(LESSONS.length - 1) : (xOf(k - 1) + xOf(k)) / 2);
+  const segs = [];
+  LESSONS.forEach((l, i) => { if (!segs.length || segs[segs.length - 1].era !== l.era) segs.push({ era: l.era, idx: [] }); segs[segs.length - 1].idx.push(i); });
+  const nodes = [];
+  const wrap = h('div', { class: 'trail' }, segs.map((sg) => {
+    const H = HEAD + sg.idx.length * ROW + (sg === segs[segs.length - 1] ? 28 : 0);
+    const pts = sg.idx.map((i, j) => [xOf(i), HEAD + (j + 0.5) * ROW, i]);
+    const first = sg.idx[0], last = sg.idx[sg.idx.length - 1];
+    const all = [[bx(first), first === 0 ? HEAD - 20 : 0, first - 0.5], ...pts, [bx(last + 1), H, last + 0.5]];
+    let done = '', todo = '';
+    for (let k = 1; k < all.length; k++) {
+      const [x1, y1, i1] = all[k - 1], [x2, y2, i2] = all[k], m = (y2 - y1) / 2;
+      const seg = `M${x1} ${y1}C${x1} ${y1 + m} ${x2} ${y2 - m} ${x2} ${y2}`;
+      if (cur < 0 || i2 <= curI) done += seg; else todo += seg;
+    }
+    const svg = `<svg class="trail-svg" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <path d="${done + todo}" class="road"/><path d="${todo}" class="road-dash"/><path d="${done}" class="road-done"/></svg>`;
+    const sec = h('section', { class: `trail-era era-${sg.era}`, style: { height: `${H}px` } });
+    sec.innerHTML = svg;
+    sec.append(h('div', { class: 'trail-head' }, h('span', {}, `${ERA_ICON[sg.era] || '📍'} ${ERAS[sg.era]}`)));
+    pts.forEach(([x, y, i], j) => {
+      const l = LESSONS[i];
+      const isDone = store.isDone(l.n), open = store.unlocked(l.n), best = isDone ? store.state().done[l.n].best : 0;
+      const deco = ERA_DECO[sg.era] || ERA_DECO.mekke;
+      sec.append(h('span', { class: 'trail-deco', 'aria-hidden': 'true', style: { left: `${x > 50 ? 14 : 86}%`, top: `${y - 10}px` } }, deco[(i + j) % deco.length]));
+      const node = h('button', {
+        class: `stop${isDone ? ' done' : ''}${open ? '' : ' locked'}${i === cur ? ' current' : ''}`,
+        style: { left: `${x}%`, top: `${y}px` }, disabled: !open, onclick: () => lesson(l),
+        'aria-label': `${i + 1}. ${l.title}${isDone ? ' · ' + t('nCorrect', best) : ''}`,
+      },
+        h('span', { class: 'stop-disc' }, h('span', { class: 'stop-icon', 'aria-hidden': 'true' }, open ? l.icon : '🔒'), h('b', { class: 'stop-num', 'aria-hidden': 'true' }, i + 1)),
+        h('span', { class: 'stop-stars', 'aria-hidden': 'true' }, isDone ? [0, 1, 2].map((k) => h('i', { class: k < best ? 'on' : '' }, '★')) : null),
+        h('span', { class: 'stop-title', 'aria-hidden': 'true' }, l.title));
+      nodes[i] = node;
+      sec.append(node);
+    });
+    return sec;
   }));
-  return [goal, h('h3', { class: 'sec' }, t('path')), path];
+  const camel = h('div', { class: 'camel', 'aria-hidden': 'true' }, cur < 0 ? '🏁' : '🐪');
+  wrap.append(camel);
+  const place = (i) => {
+    const n = nodes[i]; if (!n) return;
+    const w = wrap.getBoundingClientRect(), r = n.querySelector('.stop-disc').getBoundingClientRect();
+    camel.style.transform = `translate(${r.left - w.left + r.width - 6}px, ${r.top - w.top - 26}px)`;
+  };
+  const go = (tries = 0) => {
+    if (!wrap.isConnected) { if (tries < 20) requestAnimationFrame(() => go(tries + 1)); return; }
+    const from = camelSeen != null && camelSeen < curI ? camelSeen : curI;
+    camel.classList.add('still'); place(from);
+    void camel.offsetWidth; camel.classList.remove('still');
+    if (curI > 1) nodes[curI].scrollIntoView({ block: 'center' });
+    if (from !== curI) setTimeout(() => { camel.classList.add('walk'); place(curI); setTimeout(() => camel.classList.remove('walk'), 1300); }, 450);
+    camelSeen = curI;
+  };
+  requestAnimationFrame(() => go());
+  return wrap;
 }
 
 /* ───────── Ders ───────── */
@@ -676,6 +772,7 @@ function hadis(then, startAt) {
   show(main);
 }
 
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function start() {
   document.getElementById('splash')?.remove();
   const q = new URLSearchParams(location.search).get('hadis');

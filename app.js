@@ -8,10 +8,11 @@ import { shareCard } from './share.js';
 import { t, LANG, LANGS, LANG_FLAGS, setLang, serverMsg, langChosen } from './i18n.js';
 import { HADIS } from './hadis.js';
 import { HIKAYE, WHO, HIKAYE_SRC } from './hikaye-i18n.js';
+import { TOPICS, REHBER_UI, CRISIS } from './rehber.js';
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 import { lessonMap } from './map.js';
 
-export const VERSION = '1.7.1';
+export const VERSION = '1.8.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -32,7 +33,7 @@ const topbar = (title, back) => h('header', { class: 'top' },
     back ? null : h('button', { class: 'icon', 'aria-label': t('settings'), onclick: settings }, '⚙︎')));
 
 const tabs = (cur) => h('nav', { class: 'tabs' },
-  [['dersler', '📖', t('tabLessons')], ...(HIKAYE ? [['hikaye', '📜', t('storiesTitle')]] : []), ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
+  [['dersler', '📖', t('tabLessons')], ...(HIKAYE ? [['hikaye', '📜', t('storiesTitle')]] : []), ['rehber', '💬', RU().tab], ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
     h('button', { class: cur === k ? 'on' : '', 'aria-current': cur === k ? 'page' : null, onclick: () => home(k) }, h('span', {}, i), label)));
 
 /* ───────── İlk açılış ───────── */
@@ -59,7 +60,7 @@ function onboarding() {
 
 /* ───────── Ana ekran ───────── */
 function home(tab = 'dersler') {
-  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : tab === 'hikaye' ? storiesTab() : lessonsTab();
+  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : tab === 'hikaye' ? storiesTab() : tab === 'rehber' ? rehberTab() : lessonsTab();
   show(topbar(), h('main', { class: 'screen' }, body), tabs(tab));
 }
 
@@ -128,6 +129,46 @@ function storiesTab() {
     h('ol', { class: 'story-list' }, HIKAYE.map(row))];
 }
 const stories = () => home('hikaye');
+
+/* ───────── Hadislerle cevap ───────── */
+const RU = () => REHBER_UI[LANG] || REHBER_UI.tr;
+const TL = (x) => x.L[LANG] || x.L.tr;
+const fold = (v) => v.toLocaleLowerCase(LANG).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
+let rehberQ = '';
+const STOP = new Set(['istiyorum', 'ediyorum', 'yapmak', 'ben', 'benim', 'bir', 'cok', 'icin', 'nasil', 'neden', 'gibi', 'olan', 'and', 'the', 'for', 'with', 'want', 'feel', 'que', 'por', 'para', 'con', 'una', 'ich', 'und', 'mit', 'mich', 'что', 'как', 'для', 'меня']);
+function rehberTab() {
+  const U = RU();
+  const crisis = h('aside', { class: 'crisis', role: 'alert', hidden: true }, U.crisis);
+  const none = h('p', { class: 'muted small', hidden: true }, U.none);
+  const grid = h('div', { class: 'topic-grid' });
+  const paint = () => {
+    const q = fold(rehberQ.trim());
+    crisis.hidden = !CRISIS.test(rehberQ);
+    const words = q.split(/[\s,.!?]+/).filter((w) => w.length > 2 && !STOP.has(w));
+    const match = (x) => { const toks = fold(`${TL(x)[0]} ${TL(x)[1]}`).split(/[\s,]+/).filter((k) => k.length > 2 && !STOP.has(k)); return words.some((w) => toks.some((k) => k.startsWith(w) || (w.startsWith(k) && k.length >= 4))); };
+    const hits = CRISIS.test(rehberQ) ? TOPICS.filter((x) => ['zor', 'yalniz', 'kaygi'].includes(x.id)) : words.length ? TOPICS.filter(match) : TOPICS;
+    none.hidden = !(words.length && !hits.length);
+    grid.replaceChildren(...(hits.length ? hits : TOPICS).map((x) => h('button', { class: 'topic', onclick: () => topic(x) }, h('span', { 'aria-hidden': 'true' }, x.i), TL(x)[0])));
+  };
+  const input = h('input', { class: 'search', type: 'search', placeholder: U.search, 'aria-label': U.search, value: rehberQ, oninput: (e) => { rehberQ = e.target.value; paint(); } });
+  paint();
+  return [
+    h('section', { class: 'card today rehber-head' }, h('p', { class: 'eyebrow' }, U.title), h('h2', {}, U.lead), input),
+    crisis, none, grid,
+    h('p', { class: 'tiny muted' }, U.note)];
+}
+function topic(x) {
+  const U = RU(); const [name, , note] = TL(x);
+  const SI = { tr: 0, es: 1, en: 2, de: 3, ru: 4 }[LANG] ?? 0;
+  show(topbar(U.back, () => home('rehber')),
+    h('main', { class: 'screen' },
+      h('section', { class: 'card topic-head' }, h('div', { class: 'lesson-icon', 'aria-hidden': 'true' }, x.i), h('h1', {}, name), h('p', { class: 'lesson-text' }, note)),
+      x.k.map((n) => { const d = HADIS[n]; return h('article', { class: 'card hadis-card' },
+        h('p', { class: 'hadis-ar', lang: 'ar', dir: 'rtl' }, d.ar),
+        h('blockquote', {}, `“${d[LANG] || d.tr}”`),
+        h('p', { class: 'hadis-src' }, `— ${d.src[SI] || d.src[0]}`)); }),
+      h('p', { class: 'tiny muted' }, U.note)));
+}
 
 /* ───────── Kervan yolu ───────── */
 let camelSeen = null; // devenin en son gösterildiği durak (ders bitince bir sonrakine yürür)

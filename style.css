@@ -281,3 +281,17 @@ body.kid .opt { font-size: 1.15rem; padding: 18px; }
 .hisse .eyebrow { color: var(--gold-deep); }
 .story-today { cursor: pointer; }
 .story-icon.big { width: 64px; height: 64px; font-size: 2.1rem; background: rgba(251,247,238,.12); }
+
+/* Hadislerle cevap */
+.rehber-head h2 { font-size: 1.15rem; margin: 4px 0 2px; }
+.search { width: 100%; font: inherit; padding: 12px 14px; border-radius: 14px; border: 0; background: rgba(251,247,238,.95); color: var(--fg); }
+.topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.topic { display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: var(--surface); border-radius: 16px; padding: 14px 12px; box-shadow: var(--shadow); font: 700 .95rem/1.25 var(--body); cursor: pointer; min-height: 64px; }
+.topic span { font-size: 1.5rem; flex: none; }
+.crisis { background: var(--red-soft); color: var(--red); border-left: 4px solid var(--red); border-radius: 12px; padding: 12px 14px; font-weight: 700; }
+.topic-head h1 { margin: 2px 0; }
+.hadis-card { display: flex; flex-direction: column; gap: 8px; }
+.hadis-card .hadis-ar { font-size: 1.35rem; line-height: 1.9; margin: 0; text-align: right; color: var(--ink); }
+.hadis-card blockquote { margin: 0; font-size: 1.08rem; line-height: 1.6; font-weight: 700; color: var(--fg); }
+.hadis-card .hadis-src { margin: 0; color: var(--gold-deep); font-weight: 600; font-size: .9rem; }
+.tabs button { min-width: 0; }

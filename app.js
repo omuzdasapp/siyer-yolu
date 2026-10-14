@@ -1,6 +1,6 @@
 import { LESSONS, ERAS, BADGES, SOURCES, byId, shuffle } from './data.js';
 import * as store from './store.js';
-import { say, stop, chime } from './audio.js';
+import { say, stop, chime, playLesson, speaking } from './audio.js';
 import { h, toast, confetti, wait } from './ui.js';
 import { online, rpc, forgetSession } from './net.js';
 import { onlineMatch, botMatch, raceMatch, N_Q } from './duel.js';
@@ -96,8 +96,8 @@ function lessonsTab() {
 function lesson(l) {
   const text = kid() ? l.kid : l.text;
   const listen = h('button', { class: 'btn ghost small', onclick: async () => {
-    if (window.speechSynthesis?.speaking) { stop(); listen.textContent = t('listen'); return; }
-    listen.textContent = t('stopListen'); await say(`${l.title}. ${text}`); listen.textContent = t('listen');
+    if (speaking()) { stop(); listen.textContent = t('listen'); return; }
+    listen.textContent = t('stopListen'); await playLesson(l, kid(), `${l.title}. ${text}`); listen.textContent = t('listen');
   } }, t('listen'));
   show(topbar(`${LESSONS.indexOf(l) + 1}/${LESSONS.length}`, () => home()),
     h('main', { class: 'screen' },

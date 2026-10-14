@@ -4,6 +4,25 @@ import { LANG } from './i18n.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const es = LANG === 'es';
+// İngilizce, Almanca ve Rusça yer adları
+const N3 = {
+  mekke: ['Mecca', 'Mekka', 'Мекка'], kabe: ['The Kaaba (Mecca)', 'Die Kaaba (Mekka)', 'Кааба (Мекка)'],
+  safa: ['Mount Safa (Mecca)', 'Der Hügel Safa (Mekka)', 'Холм Сафа (Мекка)'], medine: ['Medina', 'Medina', 'Медина'],
+  yesrib: ['Yathrib (Medina)', 'Yathrib (Medina)', 'Ясриб (Медина)'], hendek: ['Medina (the Trench)', 'Medina (der Graben)', 'Медина (ров)'],
+  taif: ['Taif', 'Taif', 'Таиф'], kudus: ['Jerusalem (al-Aqsa)', 'Jerusalem (al-Aqsa)', 'Иерусалим (аль-Акса)'],
+  kudusH: ['Jerusalem (Heraclius)', 'Jerusalem (Herakleios)', 'Иерусалим (Ираклий)'], busra: ['Bosra', 'Bosra', 'Бусра'],
+  sam: ['Damascus (Sham)', 'Damaskus (Scham)', 'Дамаск (Шам)'], habes: ['Abyssinia (Aksum)', 'Abessinien (Aksum)', 'Абиссиния (Аксум)'],
+  hira: ['Hira (Mount of Light)', 'Hira (Berg des Lichts)', 'Хира (гора Света)'], sevr: ['Cave of Thawr', 'Höhle Thaur', 'Пещера Саур'],
+  arafat: ['Arafat', 'Arafat', 'Арафат'], akabe: ['Aqaba (Mina)', 'Aqaba (Mina)', 'Акаба (Мина)'], ebva: ['Abwa', 'Abwa', 'Абва'],
+  kuba: ['Quba', 'Quba', 'Куба'], uhud: ['Mount Uhud', 'Berg Uhud', 'Гора Ухуд'], bedir: ['Badr', 'Badr', 'Бадр'],
+  hudeybiye: ['Hudaybiyyah', 'Hudaibiya', 'Худайбия'], hayber: ['Khaybar', 'Chaibar', 'Хайбар'], mute: ['Mu\'tah', 'Mu\'ta', 'Мута'],
+  huneyn: ['Hunayn', 'Hunain', 'Хунайн'], tebuk: ['Tabuk', 'Tabuk', 'Табук'], necran: ['Najran', 'Nadschran', 'Наджран'],
+  yemen: ['Yemen (Sana\'a)', 'Jemen (Sanaa)', 'Йемен (Сана)'], kudeyd: ['Qudayd (Umm Ma\'bad)', 'Qudaid (Umm Ma\'bad)', 'Кудайд (Умм Мабад)'],
+  medain: ['Ctesiphon (the Persian Chosroes)', 'Ktesiphon (der persische Chosrau)', 'Ктесифон (персидский Хосров)'],
+  iskenderiye: ['Alexandria (Muqawqis)', 'Alexandria (Muqauqis)', 'Александрия (Мукаукис)'],
+};
+const L3 = { en: 0, de: 1, ru: 2 }[LANG];
+const nm = (k) => (L3 != null ? N3[k][L3] : P[k][es ? 3 : 2]);
 
 // [enlem, boylam, Türkçe ad, İspanyolca ad]
 const P = {
@@ -58,8 +77,8 @@ const L = {
 };
 
 const SEAS = [
-  [20.3, 38.6, 'Kızıldeniz', 'Mar Rojo'], [33.6, 32.4, 'Akdeniz', 'Mediterráneo'],
-  [27.2, 50.6, 'Basra Körfezi', 'Golfo Pérsico'], [23.0, 43.5, 'Arabistan', 'Arabia'], [12.6, 44.5, 'Aden Körfezi', 'Golfo de Adén'],
+  [20.3, 38.6, 'Kızıldeniz', 'Mar Rojo', 'Red Sea', 'Rotes Meer', 'Красное море'], [33.6, 32.4, 'Akdeniz', 'Mediterráneo', 'Mediterranean', 'Mittelmeer', 'Средиземное море'],
+  [27.2, 50.6, 'Basra Körfezi', 'Golfo Pérsico', 'Persian Gulf', 'Persischer Golf', 'Персидский залив'], [23.0, 43.5, 'Arabistan', 'Arabia', 'Arabia', 'Arabien', 'Аравия'], [12.6, 44.5, 'Aden Körfezi', 'Golfo de Adén', 'Gulf of Aden', 'Golf von Aden', 'Аденский залив'],
 ];
 
 const W = 340; const H = 220;
@@ -72,7 +91,7 @@ export const hasMap = (n) => Boolean(L[n]);
 export function lessonMap(n) {
   const def = Array.isArray(L[n]) ? { p: L[n] } : L[n];
   if (!def) return null;
-  const pts = def.p.map((k) => ({ k, lat: P[k][0], lon: P[k][1], name: P[k][es ? 3 : 2] }));
+  const pts = def.p.map((k) => ({ k, lat: P[k][0], lon: P[k][1], name: nm(k) }));
   const focus = def.focus || def.p[0];
   // Görünüm: yerleri kapsayan, en az 0,35° genişliğinde bir pencere
   const lats = pts.map((p) => p.lat); const lons = pts.map((p) => p.lon);
@@ -123,20 +142,21 @@ export function lessonMap(n) {
     const x = X(P[k][1]); const y = Y(P[k][0]);
     if (x < 10 || x > W - 10 || y < 10 || y > H - 10) continue;
     if (placed.some((q) => Math.hypot(q.x - x, q.y - y) < 14)) continue;
-    const w = P[k][es ? 3 : 2].length * 5 + 6;
+    const w = nm(k).length * 5 + 6;
     const right = x + 8 + w < W - 4;
     if (boxes.some((b) => !(b.x1 < (right ? x + 6 : x - 6 - w) || b.x0 > (right ? x + 6 + w : x - 6) || Math.abs(b.y - (y + 4)) > 11))) continue;
     boxes.push({ x0: right ? x + 6 : x - 6 - w, x1: right ? x + 6 + w : x - 6, y: y + 4 });
     svg.append(el('circle', { cx: x, cy: y, r: 2.5, class: 'map-ctx' }));
-    svg.append(el('text', { x: right ? x + 6 : x - 6, y: y + 3.5, 'text-anchor': right ? 'start' : 'end', class: 'map-ctx-label' }, P[k][es ? 3 : 2]));
+    svg.append(el('text', { x: right ? x + 6 : x - 6, y: y + 3.5, 'text-anchor': right ? 'start' : 'end', class: 'map-ctx-label' }, nm(k)));
   }
   if (big) {
-    for (const [lat, lon, tr, esn] of SEAS) {
-      const x = X(lon); const y = Y(lat); const w = (es ? esn : tr).length * 5.2;
+    for (const [lat, lon, ...names] of SEAS) {
+      const label = names[{ tr: 0, es: 1, en: 2, de: 3, ru: 4 }[LANG] ?? 0];
+      const x = X(lon); const y = Y(lat); const w = label.length * 5.2;
       if (x < 30 || x > W - 30 || y < 14 || y > H - 8) continue;
       if (boxes.some((b) => !(b.x1 < x - w / 2 || b.x0 > x + w / 2) && Math.abs(b.y - y) < 12)) continue;
       if (placed.some((q) => Math.abs(q.x - x) < w / 2 + 4 && Math.abs(q.y - y + 3) < 9)) continue;
-      svg.insertBefore(el('text', { x, y, class: 'map-sea-label', 'text-anchor': 'middle' }, es ? esn : tr), svg.querySelector('.map-route, .map-dot'));
+      svg.insertBefore(el('text', { x, y, class: 'map-sea-label', 'text-anchor': 'middle' }, label), svg.querySelector('.map-route, .map-dot'));
     }
   }
   return svg;

@@ -2,6 +2,8 @@
 // Açılışta gösterilen kısa hadisler: Arapça metin (ar), Türkçe meal (tr), İspanyolca meal (es), kaynak (src: [Türkçe, İspanyolca]).
 // Yalnızca meşhur ve sahih ya da hasen kabul edilen rivayetler; kaynak olarak eserin adı verilir.
 // Arapça metinler harekesiz verilmiştir. Yayın öncesinde bir ilahiyatçının gözden geçirmesi önerilir.
+import { HADIS_MORE, SRC_MORE } from './hadis-more.js';
+
 const BM = ['Buhârî, Müslim', 'Al-Bujari, Muslim'];
 const B = ['Buhârî', 'Al-Bujari'];
 const M = ['Müslim', 'Muslim'];
@@ -110,3 +112,9 @@ export const HADIS = [
   { ar: 'من أحب أن يبسط له في رزقه وينسأ له في أثره فليصل رحمه', tr: 'Rızkının bollaşmasını ve ömrünün uzatılmasını isteyen, akrabalarını gözetsin.', es: 'A quien le guste que se amplíe su sustento y se prolongue su vida, que mantenga los lazos con sus parientes.', src: BM },
   { ar: 'ما من مسلم يغرس غرسا أو يزرع زرعا فيأكل منه طير أو إنسان أو بهيمة إلا كان له به صدقة', tr: 'Bir Müslüman bir ağaç diker ya da ekin eker de ondan bir kuş, bir insan veya bir hayvan yerse, bu onun için bir sadaka olur.', es: 'Si un musulmán planta un árbol o siembra un cultivo y de él come un pájaro, una persona o un animal, eso cuenta para él como una caridad.', src: BM },
 ];
+
+// İngilizce, Almanca ve Rusça mealler ile kaynak adları eklenir: src = [tr, es, en, de, ru].
+HADIS.forEach((h, i) => {
+  h.en = HADIS_MORE.en[i]; h.de = HADIS_MORE.de[i]; h.ru = HADIS_MORE.ru[i];
+  h.src = [...h.src.slice(0, 2), ...(SRC_MORE[h.src[0]] || [h.src[1], h.src[1], h.src[1]])];
+});

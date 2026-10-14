@@ -1,4 +1,4 @@
-// Sesli okuma (cihazın Türkçe/İspanyolca konuşma motoru) ve küçük ses efektleri.
+// Sesli okuma (seslendirme dosyası ya da cihazın konuşma motoru) ve küçük ses efektleri.
 import { state } from './store.js';
 import { LANG } from './i18n.js';
 
@@ -8,7 +8,10 @@ pick();
 window.speechSynthesis?.addEventListener?.('voiceschanged', pick);
 
 // Kısaltmalar sesli okunurken açılır.
-const expand = (t) => (LANG === 'es' ? t
+const BCP = { tr: 'tr-TR', es: 'es-419', en: 'en-US', de: 'de-DE', ru: 'ru-RU' };
+const expand = (t) => (LANG === 'en' ? t.replace(/\(pbuh\)/g, ', peace be upon him, ').replace(/["“”]/g, '')
+  : LANG === 'de' || LANG === 'ru' ? t.replace(/["“”„«»]/g, '')
+  : LANG === 'es' ? t
   .replace(/\(s\.a\.w\.\)/g, ', la paz y las bendiciones de Allah sean con él, ')
   .replace(/["“”]/g, '') : t
   .replace(/\(s\.a\.v\.\)/g, ' sallallahu aleyhi ve sellem ')
@@ -42,7 +45,7 @@ export function say(text, rate = 0.95) {
   s.cancel();
   return new Promise((res) => {
     const u = new SpeechSynthesisUtterance(expand(text));
-    u.lang = LANG === 'es' ? 'es-419' : 'tr-TR';
+    u.lang = BCP[LANG] || 'tr-TR';
     if (voice) u.voice = voice;
     u.rate = rate;
     u.onend = u.onerror = () => res();

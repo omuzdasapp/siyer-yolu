@@ -1,10 +1,14 @@
-// Dil seçimi ve arayüz metinleri (Türkçe / Español).
-// Dil: önce kullanıcının seçtiği, yoksa cihaz dili (es* → İspanyolca), yoksa Türkçe.
+// Dil seçimi ve arayüz metinleri. Türkçe ve İspanyolca burada; İngilizce, Almanca ve Rusça i18n-more.js içinde.
+// Dil: önce kullanıcının seçtiği, yoksa cihaz dili, yoksa Türkçe.
+import { S as MORE, SERVER as MORE_SERVER } from './i18n-more.js';
+
 const KEY = 'siyer-yolu-dil';
+export const LANGS = { tr: 'Türkçe', es: 'Español', en: 'English', de: 'Deutsch', ru: 'Русский' };
+export const LANG_FLAGS = { tr: '🇹🇷', es: '🌎', en: '🇬🇧', de: '🇩🇪', ru: '🇷🇺' };
 const saved = (() => { try { return localStorage.getItem(KEY); } catch { return null; } })();
-const device = (navigator.languages?.[0] || navigator.language || 'tr').toLowerCase();
-export const langChosen = saved === 'es' || saved === 'tr';
-export const LANG = saved === 'es' || saved === 'tr' ? saved : (device.startsWith('es') ? 'es' : 'tr');
+const device = (navigator.languages?.[0] || navigator.language || 'tr').toLowerCase().slice(0, 2);
+export const langChosen = saved in LANGS;
+export const LANG = saved in LANGS ? saved : (device in LANGS ? device : 'tr');
 document.documentElement.lang = LANG;
 
 export function setLang(l) {
@@ -13,6 +17,7 @@ export function setLang(l) {
 }
 
 const S = {
+  ...MORE,
   tr: {
     back: 'Geri', settings: 'Ayarlar', dailyStreak: 'Günlük seri',
     tabLessons: 'Dersler', tabRace: 'Yarış', tabBadges: 'Rozetler',
@@ -51,7 +56,7 @@ const S = {
     statStreak: 'günlük seri', statLessons: 'ders', statWins: 'galibiyet', shareProgress: '📤 İlerlemeni paylaş',
     mode: 'Mod', kidToAdult: 'Çocuk modu → Yetişkin', adultToKid: 'Yetişkin → Çocuk modu',
     hadisEyebrow: 'Peygamberimiz (s.a.v.) buyurdu ki', hadisGo: 'Devam et', hadisPrev: 'Önceki hadis', hadisNext: 'Sonraki hadis', hadisSetting: 'Açılışta hadis', pushSetting: 'Günlük hadis bildirimi', pushHour: 'Bildirim saati', pushAsk: '🔔 Her gün bildirim olarak gelsin', pushOn: 'Tamam! Her gün bir hadis bildirimi gelecek.', pushDenied: 'Bildirim izni verilmedi. Telefonun ayarlarından Siyer Yolu için bildirimlere izin verebilirsin.', pushErr: 'Bildirim açılamadı. İnternet bağlantını kontrol edip tekrar dene.',
-    sound: 'Ses ve sesli okuma', on: 'Açık', off: 'Kapalı', nickname: 'Takma ad', choose: 'Seç', language: 'Dil · Idioma',
+    sound: 'Ses ve sesli okuma', on: 'Açık', off: 'Kapalı', nickname: 'Takma ad', choose: 'Seç', language: 'Dil · Language',
     sourcesLink: '📚 Kaynaklar ve içerik hakkında', privacy: '🔒 Gizlilik politikası', privacyHref: 'gizlilik.html',
     resetLink: '↺ İlerlemeyi sıfırla', resetConfirm: 'Ders ilerlemen, serin ve rozetlerin bu cihazdan silinsin mi?', resetDone: 'İlerleme sıfırlandı.',
     deleteConfirm: 'Takma adın, yarış puanın ve yarış geçmişin sunucudan kalıcı olarak silinsin mi?', deleteDone: 'Yarış hesabın silindi.', deleteLink: '🗑 Yarış hesabımı sil',
@@ -124,7 +129,7 @@ const S = {
     statStreak: 'días de racha', statLessons: 'lecciones', statWins: 'victorias', shareProgress: '📤 Compartir mi progreso',
     mode: 'Modo', kidToAdult: 'Modo infantil → Adulto', adultToKid: 'Adulto → Modo infantil',
     hadisEyebrow: 'Dijo el Profeta (s.a.w.)', hadisGo: 'Continuar', hadisPrev: 'Hadiz anterior', hadisNext: 'Hadiz siguiente', hadisSetting: 'Hadiz al abrir', pushSetting: 'Notificación diaria de hadiz', pushHour: 'Hora de la notificación', pushAsk: '🔔 Recibir un hadiz cada día', pushOn: '¡Listo! Recibirás un hadiz cada día.', pushDenied: 'No se dio permiso para notificaciones. Puedes activarlas para Siyer Yolu en los ajustes del teléfono.', pushErr: 'No se pudo activar la notificación. Revisa tu conexión e inténtalo de nuevo.',
-    sound: 'Sonido y lectura en voz alta', on: 'Activado', off: 'Desactivado', nickname: 'Apodo', choose: 'Elegir', language: 'Idioma · Dil',
+    sound: 'Sonido y lectura en voz alta', on: 'Activado', off: 'Desactivado', nickname: 'Apodo', choose: 'Elegir', language: 'Idioma · Language',
     sourcesLink: '📚 Fuentes y sobre el contenido', privacy: '🔒 Política de privacidad', privacyHref: 'privacidad.html',
     resetLink: '↺ Reiniciar el progreso', resetConfirm: '¿Borrar de este dispositivo tu progreso, tu racha y tus insignias?', resetDone: 'Progreso reiniciado.',
     deleteConfirm: '¿Borrar para siempre del servidor tu apodo, tus puntos y tu historial de competencias?', deleteDone: 'Tu cuenta de competencia fue eliminada.', deleteLink: '🗑 Eliminar mi cuenta de competencia',
@@ -159,7 +164,7 @@ const S = {
 };
 
 // Sunucudan gelen (Türkçe) hata mesajlarının karşılıkları.
-const SERVER_ES = {
+const SERVER = { ...MORE_SERVER, es: {
   'Oturum yok': 'No hay sesión.',
   'Takma ad 3-16 harf/rakam olmalı.': 'El apodo debe tener de 3 a 16 letras o números.',
   'Bu takma ad kullanılamaz.': 'Este apodo no se puede usar.',
@@ -180,8 +185,8 @@ const SERVER_ES = {
   'Yalnızca arkadaşlarını davet edebilirsin.': 'Solo puedes invitar a tus amigos.',
   'Yarışı yalnızca oda sahibi başlatabilir.': 'Solo el creador de la sala puede empezar.',
   'Başlamak için en az 2 kişi gerekli.': 'Se necesitan al menos 2 personas para empezar.',
-};
-export const serverMsg = (m) => (LANG === 'es' ? SERVER_ES[m] || m : m);
+} };
+export const serverMsg = (m) => (SERVER[LANG]?.[m] || m);
 
 export function t(key, ...args) {
   const v = S[LANG][key] ?? S.tr[key];

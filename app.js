@@ -5,12 +5,12 @@ import { h, toast, confetti, wait } from './ui.js';
 import { online, rpc, forgetSession } from './net.js';
 import { onlineMatch, botMatch, raceMatch, N_Q } from './duel.js';
 import { shareCard } from './share.js';
-import { t, LANG, setLang, serverMsg, langChosen } from './i18n.js';
+import { t, LANG, LANGS, LANG_FLAGS, setLang, serverMsg, langChosen } from './i18n.js';
 import { HADIS } from './hadis.js';
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 import { lessonMap } from './map.js';
 
-export const VERSION = '1.5.0';
+export const VERSION = '1.6.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -40,10 +40,8 @@ function onboarding() {
     show(h('main', { class: 'screen center onboard' },
       h('div', { class: 'seal', 'aria-hidden': 'true' }, '۞'),
       h('h1', { class: 'display' }, 'Siyer Yolu'),
-      h('p', { class: 'lead' }, 'Dil seçin · Elige tu idioma'),
-      h('button', { class: 'btn', onclick: () => setLang('tr') }, '🇹🇷 Türkçe'),
-      h('button', { class: 'btn', onclick: () => setLang('es') }, '🌎 Español'),
-      h('p', { class: 'tiny muted' }, 'Ayarlar\'dan sonra değiştirebilirsiniz · Puedes cambiarlo luego en Ajustes')));
+      h('p', { class: 'lead' }, 'Dil seçin · Choose your language'),
+      Object.entries(LANGS).map(([k, name]) => h('button', { class: k === LANG ? 'btn' : 'btn ghost', onclick: () => setLang(k) }, `${LANG_FLAGS[k]} ${name}`))));
     return;
   }
   show(h('main', { class: 'screen center onboard' },
@@ -54,7 +52,8 @@ function onboarding() {
     h('button', { class: 'btn', onclick: () => { store.set({ mode: 'adult' }); home(); } }, t('onbSelf')),
     h('button', { class: 'btn ghost', onclick: () => { store.set({ mode: 'kid' }); home(); } }, t('onbKid')),
     h('p', { class: 'tiny muted' }, t('onbKidNote')),
-    h('button', { class: 'link', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? '🇹🇷 Türkçe' : '🌎 Español')));
+    h('select', { class: 'link', 'aria-label': t('language'), onchange: (e) => setLang(e.target.value) },
+      Object.entries(LANGS).map(([k, name]) => h('option', { value: k, selected: k === LANG }, `${LANG_FLAGS[k]} ${name}`)))));
 }
 
 /* ───────── Ana ekran ───────── */
@@ -591,7 +590,8 @@ function settings() {
         Array.from({ length: 17 }, (_, k) => k + 6).map((hh) => h('option', { value: hh, selected: hh === (s.pushHour ?? 8) }, `${String(hh).padStart(2, '0')}:00`)))) : null,
       row(t('sound'), h('button', { class: 'btn small ghost', 'aria-pressed': String(s.sound), onclick: () => { store.set({ sound: !s.sound }); settings(); } }, s.sound ? t('on') : t('off'))),
       online && !kid() ? row(t('nickname'), h('button', { class: 'btn small ghost', onclick: () => nickname(() => settings()) }, s.nickname || t('choose'))) : null,
-      row(t('language'), h('button', { class: 'btn small ghost', onclick: () => setLang(LANG === 'es' ? 'tr' : 'es') }, LANG === 'es' ? 'Español → Türkçe' : 'Türkçe → Español'))),
+      row(t('language'), h('select', { class: 'btn small ghost', 'aria-label': t('language'), onchange: (e) => setLang(e.target.value) },
+        Object.entries(LANGS).map(([k, name]) => h('option', { value: k, selected: k === LANG }, `${LANG_FLAGS[k]} ${name}`))))),
     h('section', { class: 'card stack' },
       h('button', { class: 'link left', onclick: sources }, t('sourcesLink')),
       h('a', { class: 'link left', href: t('privacyHref') }, t('privacy')),
@@ -638,7 +638,7 @@ function hadis(then, startAt) {
   const last = store.state().lastHadis;
   let i = Number.isInteger(startAt) && startAt >= 0 && startAt < n ? startAt : Math.floor(Math.random() * n);
   if (startAt == null && n > 1 && i === last) i = (i + 1) % n;
-  const es = LANG === 'es';
+  const SI = { tr: 0, es: 1, en: 2, de: 3, ru: 4 }[LANG] ?? 0;
   const ar = h('p', { class: 'hadis-ar', lang: 'ar', dir: 'rtl' });
   const text = h('blockquote', { class: 'hadis-text' });
   const src = h('p', { class: 'hadis-src' });
@@ -647,9 +647,10 @@ function hadis(then, startAt) {
     const x = HADIS[i];
     store.set({ lastHadis: i });
     ar.textContent = x.ar;
-    text.textContent = `“${es ? x.es : x.tr}”`;
-    main.classList.toggle('long', (es ? x.es : x.tr).length > 130);
-    src.textContent = `— ${x.src[es ? 1 : 0]}`;
+    const tx = x[LANG] || x.tr;
+    text.textContent = `“${tx}”`;
+    main.classList.toggle('long', tx.length > 130);
+    src.textContent = `— ${x.src[SI] || x.src[0]}`;
     count.textContent = `${i + 1} / ${n}`;
   };
   const go = (d) => { i = (i + d + n) % n; paint(); };

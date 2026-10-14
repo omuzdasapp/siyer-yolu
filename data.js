@@ -258,15 +258,25 @@ const TR_SOURCES = [
 ];
 
 const es = LANG === 'es';
-export const ERAS = es ? ES.ERAS : TR_ERAS;
+// İngilizce, Almanca, Rusça içerik ayrı dosyada; yalnızca o dil seçiliyse yüklenir.
+const X = ['en', 'de', 'ru'].includes(LANG) ? await import(`./data-${LANG}.js`) : null;
+
 // Ek dersler ve ek sorular birleştirilir; yol kronolojik sıraya (ORDER) göre dizilir.
 const merge = (base, extra, extraQ) => {
   const all = [...base.map((l) => ({ ...l, q: [...l.q, ...(extraQ[l.n] || [])] })), ...extra];
   return TR2.ORDER.map((n) => all.find((l) => l.n === n)).filter(Boolean);
 };
-export const LESSONS = es ? merge(ES.LESSONS, ES2.EXTRA_LESSONS, ES2.EXTRA_Q) : merge(TR_LESSONS, TR2.EXTRA_LESSONS, TR2.EXTRA_Q);
-export const BADGES = es ? ES.BADGES : TR_BADGES;
-export const SOURCES = es ? ES.SOURCES : TR_SOURCES;
+const TR_ALL = merge(TR_LESSONS, TR2.EXTRA_LESSONS, TR2.EXTRA_Q);
+// Çeviri dosyalarında dönem, yıl ve simge Türkçe veriden alınır.
+const fromX = () => TR_ALL.map((base) => {
+  const l = X.LESSONS.find((x) => x.n === base.n);
+  const year = base.year.replace('(tahminî)', `(${X.YEARW.approx})`).replace('Örnek hayat', X.YEARW.model);
+  return { n: base.n, era: base.era, icon: base.icon, year, title: l.title, text: l.text, kid: l.kid, q: l.q };
+});
+export const ERAS = X ? X.ERAS : es ? ES.ERAS : TR_ERAS;
+export const LESSONS = X ? fromX() : es ? merge(ES.LESSONS, ES2.EXTRA_LESSONS, ES2.EXTRA_Q) : TR_ALL;
+export const BADGES = X ? X.BADGES : es ? ES.BADGES : TR_BADGES;
+export const SOURCES = X ? X.SOURCES : es ? ES.SOURCES : TR_SOURCES;
 
 // Yarış soru havuzu: { id, lesson, q, o } (o[0] doğru)
 export const POOL = LESSONS.flatMap((l) => l.q.map((x, i) => ({ id: l.n * 10 + i + 1, lesson: l.n, ...x })));

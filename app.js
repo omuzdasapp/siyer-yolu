@@ -1,6 +1,6 @@
 import { LESSONS, ERAS, BADGES, SOURCES, byId, shuffle } from './data.js';
 import * as store from './store.js';
-import { say, stop, chime, playLesson, speaking } from './audio.js';
+import { say, stop, chime, playLesson, playStory, speaking } from './audio.js';
 import { h, toast, confetti, wait } from './ui.js';
 import { online, rpc, forgetSession } from './net.js';
 import { onlineMatch, botMatch, raceMatch, N_Q } from './duel.js';
@@ -11,7 +11,7 @@ import { HIKAYE, WHO, HIKAYE_SRC } from './hikaye-i18n.js';
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 import { lessonMap } from './map.js';
 
-export const VERSION = '1.7.0';
+export const VERSION = '1.7.1';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -32,7 +32,7 @@ const topbar = (title, back) => h('header', { class: 'top' },
     back ? null : h('button', { class: 'icon', 'aria-label': t('settings'), onclick: settings }, '⚙︎')));
 
 const tabs = (cur) => h('nav', { class: 'tabs' },
-  [['dersler', '📖', t('tabLessons')], ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
+  [['dersler', '📖', t('tabLessons')], ...(HIKAYE ? [['hikaye', '📜', t('storiesTitle')]] : []), ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
     h('button', { class: cur === k ? 'on' : '', 'aria-current': cur === k ? 'page' : null, onclick: () => home(k) }, h('span', {}, i), label)));
 
 /* ───────── İlk açılış ───────── */
@@ -59,7 +59,7 @@ function onboarding() {
 
 /* ───────── Ana ekran ───────── */
 function home(tab = 'dersler') {
-  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : lessonsTab();
+  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : tab === 'hikaye' ? storiesTab() : lessonsTab();
   show(topbar(), h('main', { class: 'screen' }, body), tabs(tab));
 }
 
@@ -85,7 +85,7 @@ const storyOfDay = () => (HIKAYE ? Math.floor(Date.parse(store.today() + 'T00:00
 function storyCard() {
   const i = storyOfDay(); if (i < 0) return null;
   const x = HIKAYE[i]; const read = store.storyRead(i);
-  return h('button', { class: 'card story-card', onclick: () => story(i) },
+  return h('button', { class: 'card story-card', onclick: () => story(i, () => home()) },
     h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
     h('span', { class: 'story-meta' }, h('small', { class: 'eyebrow' }, t('storyEyebrow')), h('b', {}, x.t), h('small', { class: 'muted' }, WHO[x.w])),
     h('span', { class: `story-check${read ? ' on' : ''}`, 'aria-label': read ? t('storyRead') : null }, read ? '✓' : ''));
@@ -94,7 +94,7 @@ function story(i, back = () => home()) {
   const x = HIKAYE[i];
   const listen = h('button', { class: 'btn ghost small', onclick: async () => {
     if (speaking()) { stop(); listen.textContent = t('listen'); return; }
-    listen.textContent = t('stopListen'); await say(`${x.t}. ${x.x} ${x.h}`); listen.textContent = t('listen');
+    listen.textContent = t('stopListen'); await playStory(i, `${x.t}. ${x.x} ${x.h}`); listen.textContent = t('listen');
   } }, t('listen'));
   const doneBtn = h('button', { class: 'btn', onclick: () => { store.markStory(i); chime('ok'); back(); } }, `✓ ${t('storyRead')}`);
   show(topbar(t('storiesTitle'), back),
@@ -110,15 +110,24 @@ function story(i, back = () => home()) {
       doneBtn,
       h('button', { class: 'link', onclick: () => stories() }, t('storyAll'))));
 }
-function stories() {
-  show(topbar(t('storiesTitle'), () => home()),
-    h('main', { class: 'screen' },
-      h('ol', { class: 'story-list' }, HIKAYE.map((x, i) => h('li', {},
-        h('button', { class: 'story-row', onclick: () => story(i, () => stories()) },
-          h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
-          h('span', { class: 'story-meta' }, h('b', {}, x.t), h('small', { class: 'muted' }, WHO[x.w])),
-          h('span', { class: `story-check${store.storyRead(i) ? ' on' : ''}` }, store.storyRead(i) ? '✓' : '')))))));
+function storiesTab() {
+  const d = storyOfDay();
+  const row = (x, i) => h('li', {},
+    h('button', { class: 'story-row', onclick: () => story(i, () => home('hikaye')) },
+      h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
+      h('span', { class: 'story-meta' }, h('b', {}, x.t), h('small', { class: 'muted' }, WHO[x.w])),
+      h('span', { class: `story-check${store.storyRead(i) ? ' on' : ''}` }, store.storyRead(i) ? '✓' : '')));
+  const read = HIKAYE.filter((_, i) => store.storyRead(i)).length;
+  return [
+    h('section', { class: 'card today story-today', onclick: () => story(d, () => home('hikaye')) },
+      h('div', { class: 'today-head' },
+        h('span', { class: 'story-icon big', 'aria-hidden': 'true' }, HIKAYE[d].i),
+        h('div', {}, h('p', { class: 'eyebrow' }, t('storyEyebrow')), h('h2', {}, HIKAYE[d].t), h('p', { class: 'muted small' }, WHO[HIKAYE[d].w]))),
+      h('button', { class: 'btn' }, store.storyRead(d) ? `✓ ${t('storyRead')}` : t('storyOpen'))),
+    h('h3', { class: 'sec' }, `${t('storyAll')} · ${read}/${HIKAYE.length}`),
+    h('ol', { class: 'story-list' }, HIKAYE.map(row))];
 }
+const stories = () => home('hikaye');
 
 /* ───────── Kervan yolu ───────── */
 let camelSeen = null; // devenin en son gösterildiği durak (ders bitince bir sonrakine yürür)

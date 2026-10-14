@@ -74,7 +74,7 @@ const S = {
     shareStreakText: (n, url) => `Siyer Yolu'nda ${n} günlük serim var! 🔥 ${url}`, shareRaceText: (a, b, url) => `Siyer Yolu siyer yarışında ${a}–${b}! ⚡ ${url}`,
     downloaded: 'Görsel indirildi. Instagram hikâyende paylaşabilirsin.', shareFail: 'Paylaşım açılamadı.',
     // Ağ
-    storyEyebrow: 'Günün hikâyesi', storyHisse: 'Hikâyeden hisse', storyRead: 'Okudum', storyAll: 'Tüm hikâyeler', storyNext: 'Sonraki hikâye', storiesTitle: 'Hikâyeler', mapTitle: '📍 Nerede oldu?', mapNote: 'Konumlar yaklaşıktır.',
+    storyEyebrow: 'Günün hikâyesi', storyHisse: 'Hikâyeden hisse', storyRead: 'Okudum', storyAll: 'Tüm hikâyeler', storyNext: 'Sonraki hikâye', storiesTitle: 'Hikâyeler', storyOpen: 'Oku · 1 dk', mapTitle: '📍 Nerede oldu?', mapNote: 'Konumlar yaklaşıktır.',
     // Arkadaşlar ve odalar
     groupRace: '👥 3-4 kişilik yarış', roomCreate: '🔒 Oda kur', roomJoin: '🔢 Kodla katıl', friends: '🤝 Arkadaşlar',
     friendPh: 'Arkadaşının takma adı', addFriend: 'Arkadaş ekle', addFriendNote: (n) => `Arkadaşının takma adını yaz. Senin takma adın: ${n}`,
@@ -145,7 +145,7 @@ const S = {
     shareWin: '¡Gané! 🏆', shareDraw: 'Empate 🤝', shareLose: '¡Hora de la revancha!', join: 'Únete tú también',
     shareStreakText: (n, url) => `¡Llevo una racha de ${n} ${n === 1 ? 'día' : 'días'} en Siyer Yolu! 🔥 ${url}`, shareRaceText: (a, b, url) => `¡${a}–${b} en la competencia de Sira de Siyer Yolu! ⚡ ${url}`,
     downloaded: 'Imagen descargada. Puedes compartirla en tus historias de Instagram.', shareFail: 'No se pudo abrir el menú para compartir.',
-    storyEyebrow: 'Historia del día', storyHisse: 'La enseñanza', storyRead: 'Leído', storyAll: 'Todas las historias', storyNext: 'Siguiente historia', storiesTitle: 'Historias', mapTitle: '📍 ¿Dónde ocurrió?', mapNote: 'Las ubicaciones son aproximadas.',
+    storyEyebrow: 'Historia del día', storyHisse: 'La enseñanza', storyRead: 'Leído', storyAll: 'Todas las historias', storyNext: 'Siguiente historia', storiesTitle: 'Historias', storyOpen: 'Leer · 1 min', mapTitle: '📍 ¿Dónde ocurrió?', mapNote: 'Las ubicaciones son aproximadas.',
     groupRace: '👥 Competencia de 3-4', roomCreate: '🔒 Crear sala', roomJoin: '🔢 Entrar con código', friends: '🤝 Amigos',
     friendPh: 'Apodo de tu amigo', addFriend: 'Agregar amigo', addFriendNote: (n) => `Escribe el apodo de tu amigo. Tu apodo es: ${n}`,
     sendRequest: 'Enviar solicitud', requestSent: 'Solicitud enviada', friendAdded: 'Ahora son amigos 🤝',

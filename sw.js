@@ -1,5 +1,5 @@
 // Çevrimdışı çalışma: dersler ve bot yarışı internetsiz de açılır. Canlı yarış istekleri (Supabase) önbelleğe alınmaz.
-const CACHE = 'siyer-yolu-v9';
+const CACHE = 'siyer-yolu-v10';
 const FILES = [
   './', 'index.html', 'style.css', 'gizlilik.html', 'privacidad.html', 'privacy.html', 'datenschutz.html', 'konfidentsialnost.html', 'manifest.webmanifest',
   'app.js', 'data.js', 'data-es.js', 'data-tr-2.js', 'data-es-2.js', 'map.js', 'map-land.js', 'i18n.js', 'i18n-more.js', 'hikaye.js', 'hikaye-i18n.js', 'hikaye-en.js', 'hikaye-es.js', 'hikaye-de.js', 'hikaye-ru.js', 'data-en.js', 'data-de.js', 'data-ru.js', 'hadis.js', 'hadis-more.js', 'push.js', 'store.js', 'audio.js', 'ui.js', 'net.js', 'config.js', 'duel.js', 'share.js',

@@ -279,3 +279,5 @@ body.kid .opt { font-size: 1.15rem; padding: 18px; }
 .hisse { background: var(--gold-soft); border-left: 4px solid var(--gold); border-radius: 12px; padding: 10px 14px; margin: 4px 0 6px; }
 .hisse p { margin: 2px 0 0; font-weight: 700; color: var(--gold-deep); }
 .hisse .eyebrow { color: var(--gold-deep); }
+.story-today { cursor: pointer; }
+.story-icon.big { width: 64px; height: 64px; font-size: 2.1rem; background: rgba(251,247,238,.12); }

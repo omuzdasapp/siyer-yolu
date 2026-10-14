@@ -24,11 +24,15 @@ export const speaking = () => Boolean(window.speechSynthesis?.speaking) || Boole
 export const stop = () => { window.speechSynthesis?.cancel(); if (clip) { clip.pause(); clip = null; } };
 
 /** Dersi okur: önce profesyonel seslendirme dosyası, yoksa cihazın konuşma motoru. */
-export function playLesson(l, kid, fallbackText) {
+export const playLesson = (l, kid, fallbackText) => playFile(`ses/${LANG}/${l.n}-${kid ? 'k' : 'a'}.mp3`, fallbackText);
+/** Hikâye seslendirmesi: yalnızca TR ve ES için dosya var, diğer dillerde cihaz okur. */
+export const playStory = (i, fallbackText) => (LANG === 'tr' || LANG === 'es' ? playFile(`ses/${LANG}/h${i + 1}.mp3`, fallbackText) : say(fallbackText));
+
+function playFile(src, fallbackText) {
   if (!state().sound) return Promise.resolve();
   stop();
   return new Promise((res) => {
-    const a = new Audio(`ses/${LANG}/${l.n}-${kid ? 'k' : 'a'}.mp3`);
+    const a = new Audio(src);
     clip = a;
     let fell = false;
     const fallback = () => { if (fell || clip !== a) return; fell = true; clip = null; say(fallbackText).then(res); };

@@ -254,7 +254,11 @@ const TR_SOURCES = [
   'İbn Hişâm, es-Sîretü\'n-Nebeviyye',
   'Buhârî, el-Câmiu\'s-Sahîh',
   'TDV İslâm Ansiklopedisi, "Muhammed" maddesi',
-  'Diyanet İşleri Başkanlığı, Hz. Muhammed\'in (s.a.v.) Hayatı',
+  'Diyanet İşleri Başkanlığı, Hz. Muhammed\'in (s.a.v.) Hayatı',  'Müslim, el-Câmiu\'s-Sahîh',
+  'Tirmizî, eş-Şemâilü\'n-Nebeviyye',
+  'İbn Sa\'d, et-Tabakàtü\'l-kübrâ',
+  'Muhammed Hamîdullah, İslâm Peygamberi',
+  'TDV İslâm Ansiklopedisi, sahabe ve gazve maddeleri (soru açıklamalarında ayrıca belirtilmiştir)',
 ];
 
 const es = LANG === 'es';

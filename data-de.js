@@ -21,7 +21,11 @@ export const SOURCES = [
   'Ibn Hischam, as-Sira an-Nabawiyya',
   'Al-Buchari, al-Dschami as-Sahih',
   'TDV-Enzyklopädie des Islam (TDV İslâm Ansiklopedisi), Artikel „Muhammed“',
-  'Präsidium für Religionsangelegenheiten der Türkei (Diyanet), Das Leben des Propheten Muhammad (Friede sei mit ihm)',
+  'Präsidium für Religionsangelegenheiten der Türkei (Diyanet), Das Leben des Propheten Muhammad (Friede sei mit ihm)',  'Muslim, al-Dschami as-Sahih',
+  'At-Tirmidhi, asch-Schamail al-Muhammadiyya',
+  'Ibn Sa\'d, at-Tabaqat al-Kubra',
+  'Muhammad Hamidullah, Der Prophet des Islam',
+  'TDV-Enzyklopädie des Islam, Artikel zu Gefährten und Feldzügen (in jeder Fragenerklärung angegeben)',
 ];
 
 export const LESSONS = [

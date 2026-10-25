@@ -246,5 +246,9 @@ export const SOURCES = [
   'Ibn Hisham, as-Sira an-Nabawiyya',
   'Al-Bujari, al-Yami as-Sahih',
   'TDV İslâm Ansiklopedisi, artículo "Muhammed"',
-  'Presidencia de Asuntos Religiosos de Turquía (Diyanet), La vida del Profeta Muhammad (s.a.w.)',
+  'Presidencia de Asuntos Religiosos de Turquía (Diyanet), La vida del Profeta Muhammad (s.a.w.)',  'Muslim, al-Yami as-Sahih',
+  'At-Tirmidhi, ash-Shamáil al-Muhammadiyya',
+  'Ibn Saad, at-Tabaqat al-Kubra',
+  'Muhammad Hamidullah, El Profeta del islam',
+  'Enciclopedia del Islam TDV, artículos sobre compañeros y campañas (citados en cada explicación)',
 ];

@@ -9,10 +9,13 @@ import { t, LANG, LANGS, LANG_FLAGS, setLang, serverMsg, langChosen } from './i1
 import { HADIS } from './hadis.js';
 import { HIKAYE, WHO, HIKAYE_SRC } from './hikaye-i18n.js';
 import { TOPICS, REHBER_UI, CRISIS } from './rehber.js';
+const EB_ON = false; // Elif Ba rafta (../rafa-elifba)
 import { pushSupported, enablePush, disablePush, refreshPush } from './push.js';
 import { lessonMap } from './map.js';
+import { EX, WHY } from './aciklama.js';
+import { KU, AGE, SAHABE, SEMAIL, firstSentence, curly } from './kesfet.js';
 
-export const VERSION = '1.8.0';
+export const VERSION = '2.0.0';
 const app = document.getElementById('app');
 const kid = () => store.state().mode === 'kid';
 let cleanup = null; // ekrandan çıkarken durdurulacak zamanlayıcılar
@@ -30,10 +33,11 @@ const topbar = (title, back) => h('header', { class: 'top' },
   title ? h('span', { class: 'top-title' }, title) : null,
   h('span', { class: 'top-right' },
     h('span', { class: `streak${store.doneToday() ? ' lit' : ''}`, title: t('dailyStreak') }, '🔥 ', String(store.streak())),
+    back || !EB_ON ? null : h('button', { class: 'icon', 'aria-label': t('tabBadges'), onclick: () => home('rozet') }, '🏅'),
     back ? null : h('button', { class: 'icon', 'aria-label': t('settings'), onclick: settings }, '⚙︎')));
 
 const tabs = (cur) => h('nav', { class: 'tabs' },
-  [['dersler', '📖', t('tabLessons')], ...(HIKAYE ? [['hikaye', '📜', t('storiesTitle')]] : []), ['rehber', '💬', RU().tab], ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
+  [['dersler', '📖', t('tabLessons')], ['kesfet', '🧭', KU.tab], ['rehber', '💬', RU().tab], ['yaris', '⚡', t('tabRace')], ['rozet', '🏅', t('tabBadges')]].map(([k, i, label]) =>
     h('button', { class: cur === k ? 'on' : '', 'aria-current': cur === k ? 'page' : null, onclick: () => home(k) }, h('span', {}, i), label)));
 
 /* ───────── İlk açılış ───────── */
@@ -60,7 +64,10 @@ function onboarding() {
 
 /* ───────── Ana ekran ───────── */
 function home(tab = 'dersler') {
-  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : tab === 'hikaye' ? storiesTab() : tab === 'rehber' ? rehberTab() : lessonsTab();
+  // Keşfet'in alt bölümleri: geri tuşu Keşfet'e döner, alt menüde Keşfet seçili kalır.
+  const SUB = { hikaye: [() => t('storiesTitle'), storiesTab], zaman: [() => KU.tlTitle, timelineTab], sahabe: [() => KU.sbTitle, sahabeTab], semail: [() => KU.smTitle, semailTab] };
+  if (SUB[tab]) { show(topbar(SUB[tab][0](), () => home('kesfet')), h('main', { class: 'screen' }, SUB[tab][1]()), tabs('kesfet')); return; }
+  const body = tab === 'yaris' ? raceTab() : tab === 'rozet' ? badgesTab() : tab === 'kesfet' ? kesfetTab() : tab === 'rehber' ? rehberTab() : lessonsTab();
   show(topbar(), h('main', { class: 'screen' }, body), tabs(tab));
 }
 
@@ -130,6 +137,107 @@ function storiesTab() {
 }
 const stories = () => home('hikaye');
 
+/* ───────── Keşfet ───────── */
+function kesfetTab() {
+  const done = store.doneCount();
+  const readSt = HIKAYE.filter((_, i) => store.storyRead(i)).length;
+  const tile = (k, icon, title, lead, meta) => h('button', { class: `tile tile-${k}`, onclick: () => home(k) },
+    h('span', { class: 'tile-icon', 'aria-hidden': 'true' }, icon),
+    h('b', {}, title), h('small', {}, lead), meta ? h('span', { class: 'tile-meta' }, meta) : null);
+  return [
+    h('section', { class: 'explore-head' }, h('p', { class: 'eyebrow' }, KU.tab), h('h1', {}, KU.title), h('p', { class: 'muted' }, KU.lead)),
+    h('div', { class: 'tiles' },
+      tile('zaman', '🕰️', KU.tlTitle, KU.tlLead, `${done}/${LESSONS.length}`),
+      tile('sahabe', '👥', KU.sbTitle, KU.sbLead, `${SAHABE.length}`),
+      tile('semail', '🌙', KU.smTitle, KU.smLead, `${SEMAIL.length}`),
+      tile('hikaye', '📜', t('storiesTitle'), KU.stLead, `${readSt}/${HIKAYE.length}`)),
+  ];
+}
+
+let tlEra = 'all';
+function timelineTab() {
+  const list = h('ol', { class: 'tl' });
+  const fill = () => {
+    let lastEra = null;
+    list.replaceChildren(...LESSONS.filter((l) => tlEra === 'all' || l.era === tlEra).flatMap((l) => {
+      const head = l.era !== lastEra ? h('li', { class: 'tl-era' }, h('span', {}, `${ERA_ICON[l.era] || '📍'} ${ERAS[l.era]}`)) : null;
+      lastEra = l.era;
+      const isDone = store.isDone(l.n), open = store.unlocked(l.n);
+      const detail = h('div', { class: 'tl-detail', hidden: true });
+      const item = h('li', { class: `tl-item${isDone ? ' done' : ''}` },
+        h('button', { class: 'tl-row', 'aria-expanded': 'false', onclick: (e) => {
+          const btn = e.currentTarget; const show_ = detail.hidden;
+          if (show_ && !detail.childElementCount) {
+            const m = lessonMap(l.n);
+            detail.append(
+              h('p', { class: 'lesson-text' }, kid() ? l.kid : firstSentence(l.text)),
+              m ? h('figure', { class: 'map-card' }, m) : null,
+              open ? h('button', { class: 'btn small', onclick: () => lesson(l) }, `${l.icon} ${KU.toLesson}`) : h('p', { class: 'tiny muted' }, `🔒 ${KU.locked}`));
+          }
+          detail.hidden = !show_; btn.setAttribute('aria-expanded', String(show_)); item.classList.toggle('open', show_);
+        } },
+          h('span', { class: 'tl-when' }, h('b', {}, l.year), AGE[l.n] ? h('small', {}, `${KU.age} ${AGE[l.n]}`) : null),
+          h('span', { class: 'tl-dot', 'aria-hidden': 'true' }, isDone ? '✓' : l.icon),
+          h('span', { class: 'tl-what' }, h('b', {}, l.title), isDone ? h('small', {}, KU.done) : null)),
+        detail);
+      return head ? [head, item] : [item];
+    }));
+  };
+  const chips = h('div', { class: 'chips', role: 'tablist' }, [['all', KU.all], ...Object.entries(ERAS)].map(([k, label]) =>
+    h('button', { class: `chip${tlEra === k ? ' on' : ''}`, role: 'tab', 'aria-selected': String(tlEra === k), onclick: (e) => {
+      tlEra = k; chips.querySelectorAll('.chip').forEach((c) => { c.classList.toggle('on', c === e.currentTarget); c.setAttribute('aria-selected', String(c === e.currentTarget)); }); fill();
+    } }, label)));
+  fill();
+  return [
+    h('section', { class: 'card today tl-hero' }, h('p', { class: 'eyebrow' }, KU.tlTitle), h('h2', {}, KU.tlLead), h('p', { class: 'muted small' }, KU.tlStat(LESSONS.length))),
+    chips, list, h('p', { class: 'tiny muted center' }, KU.approx)];
+}
+
+const pager = (i, n, go) => h('nav', { class: 'pager' },
+  h('button', { class: 'btn ghost small', disabled: i === 0, onclick: () => go(i - 1) }, KU.prev),
+  h('span', { class: 'muted small' }, KU.of(i + 1, n)),
+  h('button', { class: 'btn ghost small', disabled: i === n - 1, onclick: () => go(i + 1) }, KU.next));
+
+function sahabeTab() {
+  return [h('p', { class: 'muted' }, KU.sbLead), h('ol', { class: 'story-list' }, SAHABE.map((x, i) => h('li', {},
+    h('button', { class: 'story-row', onclick: () => sahabe(i) },
+      h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
+      h('span', { class: 'story-meta' }, h('b', {}, x.n), h('small', { class: 'muted' }, x.s))))))];
+}
+function sahabe(i) {
+  const x = SAHABE[i];
+  show(topbar(KU.sbTitle, () => home('sahabe')),
+    h('main', { class: 'screen' },
+      h('article', { class: 'card lesson portrait' },
+        h('div', { class: 'lesson-icon', 'aria-hidden': 'true' }, x.i),
+        h('p', { class: 'eyebrow' }, x.s),
+        h('h1', {}, x.n),
+        h('p', { class: 'lesson-text' }, curly(x.x, LANG)),
+        h('aside', { class: 'facts' }, h('small', { class: 'eyebrow' }, KU.facts), h('ul', {}, x.f.map((f) => h('li', {}, curly(f, LANG))))),
+        h('p', { class: 'tiny muted' }, `📚 ${KU.src}: ${x.src}`)),
+      pager(i, SAHABE.length, sahabe)), tabs('kesfet'));
+}
+
+function semailTab() {
+  return [h('p', { class: 'muted' }, KU.smLead), h('ol', { class: 'story-list' }, SEMAIL.map((x, i) => h('li', {},
+    h('button', { class: 'story-row', onclick: () => semail(i) },
+      h('span', { class: 'story-icon', 'aria-hidden': 'true' }, x.i),
+      h('span', { class: 'story-meta' }, h('b', {}, x.n), h('small', { class: 'muted' }, firstSentence(x.x)))))))];
+}
+function semail(i) {
+  const x = SEMAIL[i];
+  show(topbar(KU.smTitle, () => home('semail')),
+    h('main', { class: 'screen' },
+      h('article', { class: 'card lesson portrait' },
+        h('div', { class: 'lesson-icon', 'aria-hidden': 'true' }, x.i),
+        h('p', { class: 'eyebrow' }, KU.smTitle),
+        h('h1', {}, x.n),
+        h('blockquote', { class: 'quote' }, curly(x.q, LANG)),
+        h('p', { class: 'lesson-text' }, curly(x.x, LANG)),
+        h('p', { class: 'tiny muted' }, `📚 ${KU.src}: ${x.src}`)),
+      pager(i, SEMAIL.length, semail)), tabs('kesfet'));
+}
+
 /* ───────── Hadislerle cevap ───────── */
 const RU = () => REHBER_UI[LANG] || REHBER_UI.tr;
 const TL = (x) => x.L[LANG] || x.L.tr;
@@ -170,7 +278,7 @@ function topic(x) {
       h('p', { class: 'tiny muted' }, U.note)));
 }
 
-/* ───────── Kervan yolu ───────── */
+/* ───────── Elif Ba: canlı sınıf ───────── */
 let camelSeen = null; // devenin en son gösterildiği durak (ders bitince bir sonrakine yürür)
 const ERA_DECO = { mekke: ['⛰️', '🐐', '🌙', '🏜️'], hicret: ['🌵', '⭐', '🏜️', '🦎'], medine: ['🌴', '🏡', '🌴', '💧'] };
 const ERA_ICON = { mekke: '🕋', hicret: '🐪', medine: '🌴' };
@@ -267,6 +375,7 @@ function quiz(l) {
     const q = qs[i];
     const opts = shuffle(q.o.map((t, k) => ({ t, k })));
     const fb = h('p', { class: 'feedback', role: 'status' });
+    const why = h('aside', { class: 'why', hidden: true, 'aria-live': 'polite' });
     const next = h('button', { class: 'btn', hidden: true, onclick: () => { i++; step(); } }, i === qs.length - 1 ? t('seeResult') : t('nextQ'));
     const buttons = opts.map((o) => h('button', { class: 'opt', onclick: () => {
       buttons.forEach((b) => { b.disabled = true; });
@@ -275,6 +384,9 @@ function quiz(l) {
       right.classList.add('right');
       if (o.k === 0) { correct++; chime('ok'); fb.textContent = t('right'); }
       else { btn.classList.add('wrong'); chime('no'); fb.textContent = t('rightIs', q.o[0]); }
+      const ex = EX[q.id];
+      if (ex) why.replaceChildren(h('b', {}, WHY), h('p', {}, ex[0]), h('small', {}, '📚 ', ex[1]));
+      why.hidden = !ex;
       next.hidden = false; next.focus();
     } }, o.t));
     show(topbar(t('qOf', i + 1, 3), () => lesson(l)),
@@ -282,7 +394,7 @@ function quiz(l) {
         h('div', { class: 'progress', 'aria-hidden': 'true' }, h('span', { style: { width: `${(i / 3) * 100}%` } })),
         h('h2', { class: 'question' }, q.q),
         kid() ? h('button', { class: 'btn ghost small', onclick: () => say(`${q.q} ${q.o.join(', ')}`) }, t('listenQ')) : null,
-        h('div', { class: 'opts' }, buttons), fb, next));
+        h('div', { class: 'opts' }, buttons), fb, why, next));
   };
   step();
 }

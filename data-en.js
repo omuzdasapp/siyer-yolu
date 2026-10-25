@@ -22,7 +22,11 @@ export const SOURCES = [
   'Ibn Hisham, al-Sirah al-Nabawiyyah',
   'Al-Bukhari, al-Jami al-Sahih',
   'TDV Encyclopedia of Islam (TDV İslâm Ansiklopedisi), article "Muhammed"',
-  'Presidency of Religious Affairs of Türkiye (Diyanet), The Life of Prophet Muhammad (pbuh)',
+  'Presidency of Religious Affairs of Türkiye (Diyanet), The Life of Prophet Muhammad (pbuh)',  'Muslim, al-Jami al-Sahih',
+  'Al-Tirmidhi, al-Shama\'il al-Muhammadiyyah',
+  'Ibn Sa\'d, al-Tabaqat al-Kubra',
+  'Muhammad Hamidullah, The Prophet of Islam',
+  'TDV Encyclopedia of Islam, articles on companions and campaigns (cited in each question explanation)',
 ];
 
 export const LESSONS = [
